@@ -17,3 +17,4 @@ MVP阶段功能测试,编写关键接口与前端的单元测试/集成测试。
 未来扩展：CSV导出与医生在线查看,记录备选功能，暂不纳入MVP。,"future,export"
 未来扩展：微信小程序接入,记录备选功能，暂不纳入MVP。,"future,wechat"
 未来扩展：聊天查询与筛选,记录备选功能，暂不纳入MVP。,"future,chat"
+Workshop 简化：共享 AKS 集群 + 分支=namespace 自动部署,"落地需求文档：docs/requirements/req-workshop-aks-shared-cluster.md。验收覆盖：A 本地运行；B Copilot 完成 req-health-record-validation-update 并测试通过；C 提交触发自动部署到 AKS 且可访问前端（LoadBalancer）；D 生成系统功能说明与 PPT 需求书。非功能：安全/隔离/可追溯/成本意识；管理员前置仅列准备清单。","devops,azure,security,testing"

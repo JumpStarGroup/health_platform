@@ -12,6 +12,47 @@ metadata:
 ---
 
 apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: namespace-quota
+  namespace: ${NAMESPACE}
+  labels:
+    app: health-platform
+spec:
+  hard:
+    pods: "10"
+    services: "10"
+    services.loadbalancers: "1"
+    requests.cpu: "2"
+    requests.memory: "2Gi"
+    limits.cpu: "4"
+    limits.memory: "4Gi"
+
+---
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: namespace-limits
+  namespace: ${NAMESPACE}
+  labels:
+    app: health-platform
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      max:
+        cpu: "2"
+        memory: "2Gi"
+
+---
+
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: backend-config
