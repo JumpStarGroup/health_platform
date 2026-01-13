@@ -76,3 +76,39 @@ class HealthRecord(db.Model):
     tags = db.Column(db.Text)  # store as JSON string
     note = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), nullable=False)
+
+
+class HealthImportSession(db.Model):
+    __tablename__ = "health_import_sessions"
+
+    # Use string UUID for session id to make it easy to return to clients
+    id = db.Column(db.String(64), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    original_filename = db.Column(db.String(255))
+    file_size_bytes = db.Column(db.Integer)
+    file_sha256 = db.Column(db.String(128))
+    mapping_json = db.Column(db.Text)
+    normalized_rows_json = db.Column(db.Text)
+    preview_errors_json = db.Column(db.Text)
+    preview_skipped_json = db.Column(db.Text)
+    unknown_members_json = db.Column(db.Text)
+    status = db.Column(db.String(32), default="previewed", nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), nullable=False)
+    expires_at = db.Column(db.DateTime)
+
+
+class HealthImportAudit(db.Model):
+    __tablename__ = "health_import_audits"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    session_id = db.Column(db.String(64))
+    original_filename = db.Column(db.String(255))
+    file_size_bytes = db.Column(db.Integer)
+    file_sha256 = db.Column(db.String(128))
+    total_rows = db.Column(db.Integer)
+    success_count = db.Column(db.Integer)
+    error_count = db.Column(db.Integer)
+    skipped_count = db.Column(db.Integer)
+    created_members_count = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC), nullable=False)

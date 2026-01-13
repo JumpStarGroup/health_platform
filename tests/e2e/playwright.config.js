@@ -14,10 +14,16 @@ export default defineConfig({
   timeout: 30000, // 30 second timeout per test
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
+    locale: 'zh-CN',
+    timezoneId: 'Asia/Shanghai',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 10000, // 10 second timeout for actions
+    // Set headless: false to see the browser UI during test execution
+    // Use: npx playwright test --headed to override temporarily
+    headless: process.env.HEADLESS !== 'false', // Set HEADLESS=false to see UI
+    slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0, // Slow down by N ms per action
   },
   projects: [
     {

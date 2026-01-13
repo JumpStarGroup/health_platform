@@ -7,7 +7,7 @@ from src.app import create_app
 def main():
     app = create_app()
     client = app.test_client()
-    r = client.get("/healthz")
+    r = client.get("/api/healthz")
     assert r.status_code == 200
     print("healthz:", r.json)
 

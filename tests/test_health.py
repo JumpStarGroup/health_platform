@@ -34,6 +34,34 @@ class TestHealthEndpoints:
         assert 'id' in data
         assert 'created_at' in data
 
+    def test_create_health_record_duplicate_same_minute(self, client, auth_headers):
+        access_headers = auth_headers['access']
+
+        r1 = client.post('/api/v1/health', json={
+            'systolic': 120,
+            'diastolic': 80,
+            'timestamp': '2025-08-22T10:00:30Z',
+        }, headers=access_headers)
+        assert r1.status_code == 201
+
+        r2 = client.post('/api/v1/health', json={
+            'systolic': 121,
+            'diastolic': 81,
+            'timestamp': '2025-08-22T10:00:59Z',
+        }, headers=access_headers)
+        assert r2.status_code == 400
+        body = r2.get_json()
+        assert body['code'] == '400'
+        assert body['message'] == 'Duplicate record'
+
+        # Next minute should be allowed
+        r3 = client.post('/api/v1/health', json={
+            'systolic': 122,
+            'diastolic': 82,
+            'timestamp': '2025-08-22T10:01:00Z',
+        }, headers=access_headers)
+        assert r3.status_code == 201
+
     def test_create_health_record_validation_ranges(self, client, auth_headers):
         access_headers = auth_headers['access']
         # systolic out of range (below)
@@ -112,9 +140,9 @@ class TestHealthEndpoints:
         
         # Create a few records first
         records = [
-            {'systolic': 120, 'diastolic': 80, 'heart_rate': 72, 'tags': ['morning']},
-            {'systolic': 130, 'diastolic': 85, 'heart_rate': 75, 'tags': ['evening']},
-            {'systolic': 125, 'diastolic': 82, 'heart_rate': 70, 'tags': ['afternoon']}
+            {'systolic': 120, 'diastolic': 80, 'heart_rate': 72, 'tags': ['morning'], 'timestamp': '2025-08-22T10:00:00Z'},
+            {'systolic': 130, 'diastolic': 85, 'heart_rate': 75, 'tags': ['evening'], 'timestamp': '2025-08-22T10:01:00Z'},
+            {'systolic': 125, 'diastolic': 82, 'heart_rate': 70, 'tags': ['afternoon'], 'timestamp': '2025-08-22T10:02:00Z'}
         ]
         
         for record in records:
@@ -139,7 +167,8 @@ class TestHealthEndpoints:
                 'systolic': 120 + i,
                 'diastolic': 80,
                 'heart_rate': 72,
-                'tags': [f'test{i}']
+                'tags': [f'test{i}'],
+                'timestamp': f'2025-08-22T10:{i:02d}:00Z'
             }
             client.post('/api/v1/health', json=record, headers=access_headers)
         
@@ -168,9 +197,9 @@ class TestHealthEndpoints:
         
         # Create records with different tags
         records = [
-            {'systolic': 120, 'diastolic': 80, 'heart_rate': 72, 'tags': ['morning', 'home']},
-            {'systolic': 130, 'diastolic': 85, 'heart_rate': 75, 'tags': ['evening', 'work']},
-            {'systolic': 125, 'diastolic': 82, 'heart_rate': 70, 'tags': ['morning', 'gym']}
+            {'systolic': 120, 'diastolic': 80, 'heart_rate': 72, 'tags': ['morning', 'home'], 'timestamp': '2025-08-22T10:00:00Z'},
+            {'systolic': 130, 'diastolic': 85, 'heart_rate': 75, 'tags': ['evening', 'work'], 'timestamp': '2025-08-22T10:01:00Z'},
+            {'systolic': 125, 'diastolic': 82, 'heart_rate': 70, 'tags': ['morning', 'gym'], 'timestamp': '2025-08-22T10:02:00Z'}
         ]
         
         for record in records:

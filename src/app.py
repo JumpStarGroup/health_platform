@@ -11,6 +11,7 @@ from .extensions import db, jwt, limiter, cors, migrate
 from .service.auth_service import auth_bp
 from .service.user_service import user_bp
 from .service.health_service import health_bp
+from .service.health_import_service import health_import_bp
 from .service.member_service import member_bp
 from .service.admin_service import admin_bp
 from .service.version_service import version_bp
@@ -194,6 +195,7 @@ def create_app(config_class: type = Config) -> Flask:
     app.register_blueprint(auth_bp, url_prefix="/api/v1/auth")
     app.register_blueprint(user_bp, url_prefix="/api/v1/user")
     app.register_blueprint(health_bp, url_prefix="/api/v1/health")
+    app.register_blueprint(health_import_bp, url_prefix="/api/v1/health/import")
     app.register_blueprint(member_bp, url_prefix="/api/v1/members")
     app.register_blueprint(admin_bp, url_prefix="/api/v1/admin")
     app.register_blueprint(version_bp, url_prefix="/api/v1/version")

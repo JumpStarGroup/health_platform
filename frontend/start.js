@@ -19,8 +19,7 @@ const child = spawn('npx', ['react-scripts', 'start'], {
   shell: true,
   env: {
     ...process.env,
-    // Additional environment variables to fix allowedHosts issue
-    DANGEROUSLY_DISABLE_HOST_CHECK: 'true',
+    // Use allowedHosts from webpack.config.js instead of disabling host check
     PORT: '3000'
   }
 });
