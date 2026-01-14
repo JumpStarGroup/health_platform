@@ -92,12 +92,32 @@
 
 ### 6. 综合集成测试 (Complete Integration Tests)
 
-#### 6.1 complete-e2e.spec.js
+#### 6.1 regression-user-journey-cn.spec.js ⭐
+**测试文件**: `tests/e2e/tests/regression-user-journey-cn.spec.js`
+
+**目的**: 核心回归测试 - 验证中文UI下完整的用户旅程，用于发布前快速验证关键链路。
+
+**运行方式**:
+- 本地: `cd tests/e2e && npm run test -- tests/regression-user-journey-cn.spec.js --headed`
+- CI: 手动触发 GitHub Actions 工作流 "E2E Regression Test"
+
+| 测试用例 | 场景描述 | 验证点 |
+|---------|---------|--------|
+| `should complete full user journey in Chinese UI` | 完整用户旅程（中文UI） | **1. 注册新用户**<br>- 使用分钟级时间戳生成唯一用户名/邮箱<br>- 填写所有必填字段<br>- 验证注册成功<br><br>**2. 登录**<br>- 使用刚注册的用户登录<br>- 验证跳转到主页<br>- 验证用户信息显示在头部<br><br>**3. 确保中文UI**<br>- 检测当前语言<br>- 如非中文则切换到中文<br>- 验证中文UI标记可见<br><br>**4. 创建合法健康记录（Self）**<br>- 导航到健康记录页面<br>- 添加合法血压记录（120/80）<br>- 验证记录出现在表格中<br><br>**5. 尝试非法输入验证**<br>- 尝试添加越界血压（300/30）<br>- 验证错误状态显示<br>- 验证提交被拦截<br><br>**6. 编辑已有记录**<br>- 修改已创建的记录到新值（125/85）<br>- 验证修改成功<br>- 验证新值显示在表格中<br><br>**7. 创建家庭成员**<br>- 导航到成员管理页面<br>- 创建带时间戳的新成员<br>- 验证成员出现在列表中<br><br>**8. 切换成员**<br>- 使用头部选择器切换到新成员<br>- 验证切换成功<br><br>**9. 为新成员创建记录**<br>- 为新成员添加健康记录（130/85）<br>- 验证记录出现在表格中 |
+
+**特点**:
+- ✅ 使用分钟级唯一标识避免数据冲突（格式：`YYYYMMDD-HHmm-demo-XXXX`）
+- ✅ 基于 `data-testid` 稳定选择器
+- ✅ 自动检测并切换到中文UI
+- ✅ 单条测试覆盖完整核心链路
+- ✅ 可在本地和CI中重复运行
+
+#### 6.2 complete-e2e.spec.js
 **测试文件**: `tests/e2e/tests/complete-e2e.spec.js`
 
 完整的端到端用户旅程测试，覆盖从注册到使用所有功能的完整流程。
 
-#### 6.2 complete-final.spec.js / complete-redesigned.spec.js
+#### 6.3 complete-final.spec.js / complete-redesigned.spec.js
 **测试文件**: `tests/e2e/tests/complete-final.spec.js` 等
 
 不同版本的综合测试，覆盖多个功能模块的交互。
@@ -115,10 +135,16 @@
 ✅ 批量导入界面  
 ✅ 重复记录检测  
 ✅ Self成员保护  
+✅ **核心回归测试（中文UI）** - 完整用户旅程验证  
+✅ 语言自动检测与切换  
+✅ 家庭成员创建与切换  
+✅ 非法输入验证（越界血压）  
 
 ### 待增强覆盖
 ⚠️ 批量导入完整流程（文件上传+预览+提交）  
 ⚠️ 成员映射功能（映射到已有成员 vs 创建新成员）  
+⚠️ 英文UI完整回归测试（V2）  
+⚠️ 更严格的错误文案验证（中英双语）  
 ⚠️ 成员管理的完整CRUD  
 ⚠️ CSV导出功能  
 ⚠️ 多成员场景下的记录管理  

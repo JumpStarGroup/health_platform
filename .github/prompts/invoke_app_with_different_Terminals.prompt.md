@@ -1,7 +1,7 @@
 ---
 agent: agent
 ---
-请启动本应用，严格遵守以下步骤以确保环境隔离：
+请严格按照如下的顺序，分别打开不同的终端，启动本应用，严格遵守以下步骤以确保环境隔离：要求命令行在各自独立的终端中执行，避免在同一终端中混合运行多个服务或命令。命令行按照操作系统使用相应的命令提示符（如 Windows 使用 `cmd.exe`，Linux/Mac 使用 `bash` 或 `zsh`）。以下示例以 Windows `cmd.exe` 为例：
 
 1. **启动后端（Terminal 1，仅用于后端）**：
    - 创建一个**新的**终端窗口（Terminal 1，专门用于后端）。
@@ -34,8 +34,11 @@ agent: agent
    - 执行以下命令（Windows `cmd.exe`）：
 
      ```cmd
-     cd /d c:\Zhuang\Source\health_platform
-     echo Operational Terminal Ready
+     cd /d c:\Zhuang\Source\health_platform\tests\e2e
+     echo Operational Terminal Ready,will do e2e regression tests here.
+      npx playwright install --with-deps
+
+     npx playwright test tests/regression-user-journey-cn.spec.js --headed --reporter=html,list
      ```
 
    - 自此以后：
