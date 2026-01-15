@@ -54,6 +54,23 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history to compare changes
 
+      - name: Compute safe image tag
+        id: safe_ref
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RAW_REF="${{ github.head_ref }}"
+          else
+            RAW_REF="${{ github.ref_name }}"
+          fi
+
+          SAFE_REF=$(echo "$RAW_REF" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9._-]+/-/g; s/^-+//; s/-+$//')
+          if [ -z "$SAFE_REF" ]; then
+            SAFE_REF="branch"
+          fi
+
+          echo "value=$SAFE_REF" >> $GITHUB_OUTPUT
+          echo "Safe image tag: $SAFE_REF"
+
       - name: Check file changes
         id: changes
         run: |
@@ -156,6 +173,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha
+            type=raw,value=${{ steps.safe_ref.outputs.value }}
             type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
             type=raw,value=mvp,enable=${{ startsWith(github.ref_name, 'MVP') }}
 
@@ -190,6 +208,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha
+            type=raw,value=${{ steps.safe_ref.outputs.value }}
             type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
             type=raw,value=mvp,enable=${{ startsWith(github.ref_name, 'MVP') }}
 
