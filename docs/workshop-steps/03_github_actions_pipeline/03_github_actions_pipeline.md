@@ -15,6 +15,8 @@ Unlike the previous (legacy) workshop version, **you do not create your own Azur
 
 In this exercise, you will run the existing GitHub Actions workflow to build and push images to **GHCR**, then automatically deploy both backend and frontend to **AKS**. The frontend is exposed via **LoadBalancer** for simple access validation.
 
+The system version displayed on the login page is unified across backend and frontend. It is served by **GET /api/v1/version**, which reads the repository **VERSION** file that is baked into the backend image during the build. If you update the version, rebuild and redeploy to reflect the change.
+
 ## Objectives
 
 After completing this exercise, you'll be able to:
