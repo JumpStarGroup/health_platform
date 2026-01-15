@@ -98,23 +98,96 @@ export async function switchMemberInHeader(page, memberDisplayName) {
   console.log(`Switching to member: ${memberDisplayName}`);
   // refresh the page to ensure latest state
   await page.reload();
-  
-  
-  // Find the member selector in header (it's the Select component before logout button)
-  const memberSelector = page.locator('header').locator('.ant-select').first();
-  
-  // Click to open dropdown
-  await expect(memberSelector).toBeVisible({ timeout: 5000 });
-  await memberSelector.click();
-  await page.waitForTimeout(300);
-  
-  // Select the member by display name
-  const memberOption = page.locator('.ant-select-dropdown').locator(`.ant-select-item-option-content:has-text("${memberDisplayName}")`);
-  await expect(memberOption).toBeVisible({ timeout: 5000 });
-  await memberOption.click();
-  
-  // Wait a bit for the selection to take effect
-  await page.waitForTimeout(500);
+
+  // Deterministic switch: Settings are persisted via MemberContext to localStorage.
+  // MemberContext keys:
+  // - selected_member_id
+  // - selected_member_owner (userId from JWT)
+  // We resolve member id via authenticated fetch(/api/v1/members) in page context, set localStorage, then reload.
+  const memberId = await page.evaluate(async (displayName) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) return null;
+
+    const decodeJwtSub = (jwt) => {
+      try {
+        const b64 = jwt.split('.')[1];
+        if (!b64) return null;
+        let base64 = b64.replace(/-/g, '+').replace(/_/g, '/');
+        const pad = base64.length % 4;
+        if (pad) base64 += '='.repeat(4 - pad);
+        const json = atob(base64);
+        const payload = JSON.parse(json);
+        return payload.sub || payload.identity || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const userId = decodeJwtSub(token);
+    if (!userId) return null;
+
+    // Retry fetch a few times in case the new member isn't immediately visible.
+    for (let i = 0; i < 5; i++) {
+      const resp = await fetch('/api/v1/members', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        const members = data.members || [];
+        const target = members.find((m) => {
+          const fullName = (m.full_name || '').trim();
+          if (!fullName) return false;
+          // UI may display Self as "自己" in zh; backend uses "Self".
+          if (displayName === '自己' && fullName.toLowerCase() === 'self') return true;
+          return fullName === displayName;
+        });
+        if (target && target.id != null) {
+          localStorage.setItem('selected_member_id', String(target.id));
+          localStorage.setItem('selected_member_owner', String(userId));
+          return target.id;
+        }
+      }
+      await new Promise((r) => setTimeout(r, 300));
+    }
+    return null;
+  }, memberDisplayName);
+
+  if (memberId == null) {
+    // Fallback to UI dropdown selection if API-based resolution fails.
+    console.warn(`Could not resolve member id for '${memberDisplayName}', falling back to UI select`);
+    await expect(page.getByTestId('current-user')).toBeVisible({ timeout: 10000 });
+
+    const header = page.locator('header').first();
+    const memberSelectRoot = header.locator('.ant-select').first();
+    await expect(memberSelectRoot).toBeVisible({ timeout: 10000 });
+    const selector = memberSelectRoot.locator('.ant-select-selector').first();
+    const selectionItem = memberSelectRoot.locator('.ant-select-selection-item').first();
+
+    try { await page.keyboard.press('Escape'); } catch {}
+    try {
+      if (await selectionItem.isVisible({ timeout: 500 })) {
+        await selectionItem.click();
+      } else {
+        await selector.click();
+      }
+    } catch {
+      await selector.click({ force: true });
+    }
+
+    const memberOption = page
+      .locator('.ant-select-dropdown:visible .ant-select-item-option-content')
+      .filter({ hasText: memberDisplayName })
+      .first();
+    await expect(memberOption).toBeVisible({ timeout: 10000 });
+    await memberOption.click();
+  }
+
+  await page.reload();
+
+  // Verify selection shown in header updated
+  const headerSelection = page.locator('header').locator('.ant-select-selection-item').first();
+  await expect(headerSelection).toBeVisible({ timeout: 10000 });
+  await expect(headerSelection).toContainText(memberDisplayName, { timeout: 10000 });
   
   console.log(`Switched to member: ${memberDisplayName}`);
 }
