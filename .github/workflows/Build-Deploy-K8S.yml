@@ -240,6 +240,8 @@ jobs:
     if: always() && (needs.build-and-push.result == 'success' || (needs.build-and-push.result == 'skipped' && needs.check-changes.outputs.need_build == 'false')) && ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/MVP') || startsWith(github.ref, 'refs/heads/dev') || startsWith(github.ref, 'refs/heads/staging') || github.event.inputs.deploy == 'true')
     # Use GitHub Environment for secrets and protection rules
     environment: ${{ github.event_name == 'pull_request' && 'development' || github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'production' || (github.ref == 'refs/heads/staging' && 'staging' || 'development')) }}
+    outputs:
+      frontend_url: ${{ steps.frontend_url.outputs.url }}
     steps:
       - name: Deployment Decision Summary
         run: |
@@ -564,5 +566,71 @@ jobs:
           if [ -n "$addr" ]; then
             echo "✅ Frontend URL: http://${addr}/"
           else
-            echo "⚠️ Frontend EXTERNAL-IP is still pending. Ask the cluster admin to check LoadBalancer quota and Service events."
+            echo "❌ Frontend EXTERNAL-IP is still pending."
+            exit 1
           fi
+
+      - name: Export frontend URL
+        id: frontend_url
+        run: |
+          addr=""
+          for i in $(seq 1 60); do
+            ip=$(kubectl get svc frontend-svc -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+            hostname=$(kubectl get svc frontend-svc -n ${NAMESPACE} -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+            addr="${ip:-$hostname}"
+            if [ -n "$addr" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [ -z "$addr" ]; then
+            echo "❌ Frontend EXTERNAL-IP is still pending; cannot run E2E."
+            exit 1
+          fi
+
+          echo "url=http://${addr}/" >> $GITHUB_OUTPUT
+
+  post-deploy-e2e:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: needs.deploy.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install E2E dependencies
+        working-directory: ./tests/e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./tests/e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E regression test (deployed)
+        working-directory: ./tests/e2e
+        env:
+          E2E_BASE_URL: ${{ needs.deploy.outputs.frontend_url }}
+        run: |
+          npx playwright test tests/regression-user-journey-cn.spec.js --reporter=html,list
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: tests/e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: tests/e2e/test-results/
+          retention-days: 7
