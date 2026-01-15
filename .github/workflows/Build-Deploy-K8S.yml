@@ -48,6 +48,7 @@ jobs:
     outputs:
       need_build: ${{ steps.changes.outputs.need_build }}
       skip_build_reason: ${{ steps.changes.outputs.skip_build_reason }}
+      safe_ref: ${{ steps.safe_ref.outputs.value }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -173,7 +174,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha
-            type=raw,value=${{ steps.safe_ref.outputs.value }}
+            type=raw,value=${{ needs.check-changes.outputs.safe_ref }}
             type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
             type=raw,value=mvp,enable=${{ startsWith(github.ref_name, 'MVP') }}
 
@@ -208,7 +209,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha
-            type=raw,value=${{ steps.safe_ref.outputs.value }}
+            type=raw,value=${{ needs.check-changes.outputs.safe_ref }}
             type=raw,value=latest,enable=${{ github.ref_name == 'main' }}
             type=raw,value=mvp,enable=${{ startsWith(github.ref_name, 'MVP') }}
 
