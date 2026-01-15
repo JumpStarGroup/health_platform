@@ -634,4 +634,5 @@ jobs:
         with:
           name: test-results
           path: tests/e2e/test-results/
+          if-no-files-found: ignore
           retention-days: 7
