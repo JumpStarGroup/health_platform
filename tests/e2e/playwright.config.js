@@ -40,17 +40,19 @@ export default defineConfig({
     //   use: { ...devices['Desktop Safari'] },
     // },
   ],
-  // Auto-start frontend if not running
-  webServer: [
-    {
-      command: 'npm start',
-      url: 'http://localhost:3000',
-      reuseExistingServer: true,
-      timeout: 120000,
-      cwd: '../../frontend',
-      env: {
-        BROWSER: 'none'
-      }
-    }
-  ],
+  // Auto-start frontend if not running (can be disabled for deployed E2E)
+  webServer: process.env.E2E_DISABLE_WEBSERVER === '1'
+    ? undefined
+    : [
+        {
+          command: 'npm start',
+          url: 'http://localhost:3000',
+          reuseExistingServer: true,
+          timeout: 120000,
+          cwd: '../../frontend',
+          env: {
+            BROWSER: 'none'
+          }
+        }
+      ],
 });
