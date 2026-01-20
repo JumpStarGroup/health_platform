@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html { background: #EAF3FF; }
+  body {
+    width: 720pt; height: 405pt; margin: 0; padding: 0;
+    background: #EAF3FF; font-family: Arial, sans-serif; color: #0B1F3A;
+    display: flex;
+  }
+  .content { padding: 30pt 48pt; width: 100%; }
+  .title { font-size: 24pt; margin: 0 0 12pt 0; }
+  .grid { display: flex; gap: 16pt; }
+  .card {
+    flex: 1; background: #FFFFFF; border-radius: 10pt; padding: 14pt;
+    border: 2pt solid #BFD4F2; min-height: 240pt;
+  }
+  h3 { font-size: 13pt; margin: 0 0 8pt 0; color: #1F5FBF; }
+  ul { margin: 0; padding-left: 16pt; }
+  li { font-size: 11.5pt; margin-bottom: 6pt; }
+  .badge { display: inline-block; background: #5B8BD9; color: #FFFFFF; padding: 4pt 8pt; border-radius: 6pt; font-size: 10.5pt; }
+</style>
+</head>
+<body>
+  <div class="content">
+    <p class="title">批量导入（CSV / Excel）已完成</p>
+    <div class="grid">
+      <div class="card">
+        <h3>用户流程</h3>
+        <ul>
+          <li>入口：健康记录页 → 批量导入</li>
+          <li>模板下载（CSV / Excel）</li>
+          <li>上传文件并自动校验</li>
+          <li>结果摘要 + 错误明细</li>
+          <li>错误日志可下载</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>关键能力</h3>
+        <ul>
+          <li>中英文表头识别</li>
+          <li>Self/自己/本人自动匹配</li>
+          <li>时区统一转 UTC</li>
+          <li>血压/心率范围校验</li>
+          <li>错误行跳过、成功行入库</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>质量指标</h3>
+        <ul>
+          <li>最大 5MB / 1000 条</li>
+          <li>1000 条导入 < 10s</li>
+          <li>单元测试 22/22 通过</li>
+          <li>手动测试 10 场景</li>
+        </ul>
+        <div class="badge"><p>阶段 1-4 全部完成</p></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

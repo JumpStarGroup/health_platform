@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #ffffff; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #F7F9FA; font-family: Arial, sans-serif;
+  display: flex;
+}
+.header {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #1C5C8E; padding: 20pt 40pt;
+}
+.header h2 {
+  color: #ffffff; font-size: 32pt; margin: 0;
+}
+.content {
+  margin: 100pt 40pt 40pt 40pt; width: 640pt;
+}
+.timeline {
+  display: flex; gap: 15pt;
+}
+.phase {
+  flex: 1; background: #ffffff; padding: 20pt;
+  border-radius: 8pt; border-top: 5pt solid #4ECDC4;
+}
+.phase.current { border-top-color: #FF6B6B; }
+.phase h3 {
+  color: #1C5C8E; font-size: 16pt; margin: 0 0 5pt 0;
+}
+.phase .version {
+  color: #7F8C8D; font-size: 11pt; margin: 0 0 12pt 0;
+}
+.phase ul {
+  margin: 0; padding-left: 18pt;
+}
+.phase li {
+  font-size: 11pt; color: #2C3E50; margin-bottom: 6pt;
+  line-height: 1.4;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h2>下一步计划</h2>
+</div>
+<div class="content">
+  <div class="timeline">
+    <div class="phase current">
+      <h3>短期计划</h3>
+      <p class="version">v1.2.0</p>
+      <ul>
+        <li>批量导入前端 UI</li>
+        <li>文件上传组件</li>
+        <li>导入进度显示</li>
+        <li>数据导出增强</li>
+        <li>图表交互优化</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <h3>中期计划</h3>
+      <p class="version">v1.3.0</p>
+      <ul>
+        <li>数据分析增强</li>
+        <li>趋势预测</li>
+        <li>智能提醒</li>
+        <li>第三方集成</li>
+        <li>Apple Health</li>
+        <li>Google Fit</li>
+      </ul>
+    </div>
+    <div class="phase">
+      <h3>长期愿景</h3>
+      <p class="version">v2.0.0</p>
+      <ul>
+        <li>移动应用</li>
+        <li>iOS / Android</li>
+        <li>小程序支持</li>
+        <li>AI 辅助</li>
+        <li>健康建议</li>
+        <li>异常识别</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>

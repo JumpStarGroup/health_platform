@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #ffffff; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #F7F9FA; font-family: Arial, sans-serif;
+  display: flex;
+}
+.header {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #1C5C8E; padding: 20pt 40pt;
+}
+.header h2 {
+  color: #ffffff; font-size: 32pt; margin: 0;
+}
+.content {
+  margin: 100pt 40pt 50pt 40pt; width: 640pt;
+  display: flex; gap: 20pt;
+}
+.col {
+  flex: 1; background: #ffffff; padding: 18pt;
+  border-radius: 8pt; border-top: 5pt solid #4ECDC4;
+}
+.col h3 {
+  color: #1C5C8E; font-size: 17pt; margin: 0 0 12pt 0;
+}
+.feature {
+  margin-bottom: 12pt;
+}
+.feature h4 {
+  color: #FF6B6B; font-size: 13pt; margin: 0 0 6pt 0;
+}
+.feature ul {
+  margin: 0; padding-left: 16pt;
+}
+.feature li {
+  font-size: 10pt; color: #2C3E50; margin-bottom: 3pt;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h2>核心功能亮点</h2>
+</div>
+<div class="content">
+  <div class="col">
+    <h3>批量导入</h3>
+    <div class="feature">
+      <h4>支持格式</h4>
+      <ul>
+        <li>Excel (.xlsx) / CSV</li>
+        <li>文件最大 5MB</li>
+      </ul>
+    </div>
+    <div class="feature">
+      <h4>智能处理</h4>
+      <ul>
+        <li>中英文表头自动识别</li>
+        <li>时区自动处理</li>
+      </ul>
+    </div>
+    <div class="feature">
+      <h4>性能</h4>
+      <ul>
+        <li>1000 条 &lt; 10 秒</li>
+      </ul>
+    </div>
+  </div>
+  <div class="col">
+    <h3>权限管理</h3>
+    <div class="feature">
+      <h4>三级角色</h4>
+      <ul>
+        <li>SUPER_ADMIN：管理所有用户</li>
+        <li>ADMIN：查看用户列表</li>
+        <li>USER：管理个人数据</li>
+      </ul>
+    </div>
+    <div class="feature">
+      <h4>安全机制</h4>
+      <ul>
+        <li>密码策略：8位+字母数字</li>
+        <li>Token 版本控制</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>

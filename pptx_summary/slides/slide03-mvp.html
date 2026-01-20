@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html { background: #EAF3FF; }
+  body {
+    width: 720pt; height: 405pt; margin: 0; padding: 0;
+    background: #EAF3FF; font-family: Arial, sans-serif; color: #0B1F3A;
+    display: flex;
+  }
+  .content { padding: 36pt 48pt; width: 100%; }
+  .title { font-size: 24pt; margin: 0 0 18pt 0; }
+  .row { display: flex; gap: 18pt; }
+  .card {
+    flex: 1; background: #FFFFFF; border-radius: 10pt; padding: 16pt;
+    border: 2pt solid #BFD4F2; min-height: 240pt;
+  }
+  h3 { font-size: 14pt; margin: 0 0 10pt 0; color: #1F5FBF; }
+  ul { margin: 0; padding-left: 16pt; }
+  li { font-size: 12pt; margin-bottom: 8pt; }
+</style>
+</head>
+<body>
+  <div class="content">
+    <p class="title">MVP-1 已交付能力</p>
+    <div class="row">
+      <div class="card">
+        <h3>用户与账户</h3>
+        <ul>
+          <li>注册 / 登录 / 登出 / 刷新令牌</li>
+          <li>邮箱唯一性校验</li>
+          <li>个人资料编辑</li>
+          <li>用户数据隔离</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>健康记录与筛选</h3>
+        <ul>
+          <li>血压与心率记录（范围校验）</li>
+          <li>备注与多标签管理</li>
+          <li>按标签与日期范围筛选</li>
+          <li>列表倒序展示与分页</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>可视化与体验</h3>
+        <ul>
+          <li>趋势折线图（周 / 月 / 全部）</li>
+          <li>图表下载为 PNG</li>
+          <li>响应式布局适配</li>
+          <li>基础安全（JWT/限流/CORS）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
