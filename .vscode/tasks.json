@@ -2,6 +2,78 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "dev: start backend (Terminal 1)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\dev_start_backend.cmd"
+			],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": {
+				"owner": "copilot-dev",
+				"pattern": [
+					{
+						"regexp": "a^"
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "a^",
+					"endsPattern": "a^"
+				}
+			}
+		},
+		{
+			"label": "dev: start frontend (Terminal 2)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\dev_start_frontend.cmd"
+			],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": {
+				"owner": "copilot-dev",
+				"pattern": [
+					{
+						"regexp": "a^"
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "a^",
+					"endsPattern": "a^"
+				}
+			}
+		},
+		{
+			"label": "e2e: regression user journey (Terminal 3)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\dev_run_e2e_regression.cmd"
+			],
+			"isBackground": false,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "run unit tests - fast",
 			"type": "shell",
 			"command": "python -m pytest -q",

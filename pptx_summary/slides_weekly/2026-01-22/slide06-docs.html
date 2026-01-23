@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html { background: #ffffff; }
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #F7FAFC;
+    }
+    .header {
+      height: 64pt;
+      background: #1C5C8E;
+      display: flex;
+      align-items: center;
+      padding: 0 44pt;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 20pt;
+      color: #FFFFFF;
+    }
+    .wrap {
+      flex: 1;
+      display: flex;
+      padding: 26pt 44pt 24pt 44pt;
+      gap: 18pt;
+    }
+    .panel {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 16pt 18pt;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.06);
+    }
+    h3 {
+      margin: 0;
+      font-size: 14pt;
+      color: #277884;
+    }
+    ul {
+      margin: 12pt 0 0 18pt;
+      padding: 0;
+      font-size: 13pt;
+      color: #374151;
+      line-height: 1.35;
+    }
+    li { margin: 6pt 0; }
+    p {
+      margin: 12pt 0 0 0;
+      font-size: 11pt;
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>文档与报告资产沉淀</h2>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <h3>月报与可复用素材</h3>
+      <ul>
+        <li>新增月报：Markdown / Word / PPTX（2026-01）</li>
+        <li>新增 HTML 幻灯片与生成脚本（可复用、可自动化）</li>
+        <li>补充 reports README，便于查找与复用</li>
+      </ul>
+      <p>相关路径：docs/reports、pptx_summary、workspace</p>
+    </div>
+    <div class="panel">
+      <h3>开发/流水线文档</h3>
+      <ul>
+        <li>更新 GitHub Actions pipeline 文档中的版本号/发布相关信息</li>
+        <li>为 workshop 步骤补充说明与资源清理指导（本地尚有未提交改动）</li>
+      </ul>
+      <p>相关路径：docs/workshop-steps、docs/workflow、docs/plan</p>
+    </div>
+  </div>
+</body>
+</html>

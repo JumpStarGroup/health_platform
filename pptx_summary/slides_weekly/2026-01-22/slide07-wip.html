@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html { background: #ffffff; }
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #F7FAFC;
+    }
+    .header {
+      height: 64pt;
+      background: #1C5C8E;
+      display: flex;
+      align-items: center;
+      padding: 0 44pt;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 20pt;
+      color: #FFFFFF;
+    }
+    .wrap {
+      flex: 1;
+      display: flex;
+      gap: 18pt;
+      padding: 26pt 44pt 24pt 44pt;
+    }
+    .panel {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 16pt 18pt;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.06);
+    }
+    h3 {
+      margin: 0;
+      font-size: 14pt;
+      color: #277884;
+    }
+    ul {
+      margin: 12pt 0 0 18pt;
+      padding: 0;
+      font-size: 12pt;
+      color: #374151;
+      line-height: 1.35;
+    }
+    li { margin: 6pt 0; }
+    p {
+      margin: 12pt 0 0 0;
+      font-size: 11pt;
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>当前工作区未提交改动（WIP）</h2>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <h3>修改/删除</h3>
+      <ul>
+        <li>.vscode/tasks.json（修改）</li>
+        <li>docs/plan/plan-workshop-aks-shared-cluster.md（修改）</li>
+        <li>docs/workshop-steps/07_resource_cleanup/*（修改）</li>
+        <li>docs/workflow/bmm-workflow-status.yaml（删除）</li>
+      </ul>
+      <p>建议：合并前明确删除原因，避免误删重要工作流素材。</p>
+    </div>
+    <div class="panel">
+      <h3>新增（未纳入提交）</h3>
+      <ul>
+        <li>docs/media/（新增目录）</li>
+        <li>docs/workshop-steps/05_skills_toPPT/（新增目录）</li>
+        <li>docs/workshop-steps/06_resource_cleanup/（新增目录）</li>
+        <li>scripts/dev_start_backend.cmd / dev_start_frontend.cmd / dev_run_e2e_regression.cmd</li>
+      </ul>
+      <p>建议：整理为 1-2 个独立提交（docs / scripts 分开）。</p>
+    </div>
+  </div>
+</body>
+</html>

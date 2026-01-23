@@ -1,12 +1,11 @@
 ---
-title: 'Exercise 07: Resource cleanup'
+title: 'Exercise 06: Resource cleanup'
 layout: default
 nav_order: 7
 has_children: true
-nav_exclude: true
 ---
 
-# Exercise 07: Resource cleanup
+# Exercise 06: Resource cleanup
 
 ## Scenario
 

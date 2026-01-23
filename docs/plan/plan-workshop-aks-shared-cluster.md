@@ -37,10 +37,14 @@
   - Verification: 步骤与当前 workflow 行为一致；学员只在 GitHub 操作即可完成。
 
 - [ ] **Task 3.2**: 改写清理章节：以“按 namespace 清理”为主，不再要求删除 Azure 资源组/App Service。
-  - Files: [docs/workshop-steps/07_resource_cleanup/07_resource_cleanup.md](docs/workshop-steps/07_resource_cleanup/07_resource_cleanup.md) (+ 07_01..07_04)
+  - Files: [docs/workshop-steps/06_resource_cleanup/06_resource_cleanup.md](docs/workshop-steps/06_resource_cleanup/06_resource_cleanup.md) (+ 06_01..06_02)
 
 - [ ] **Task 3.3**: 调整“基础设施”章节叙事：管理员预建 AKS，学员不再创建云资源。
   - Files: [docs/workshop-steps/02_implement_infrastructure_with_copilot/02_implement_infrastructure_with_copilot.md](docs/workshop-steps/02_implement_infrastructure_with_copilot/02_implement_infrastructure_with_copilot.md) (+ 02_01..02_02)
+
+- [ ] **Task 3.4**: 新增“技能产出”章节：用 Agent Skills 汇总前述改动并生成 PPTX 作为可分享工件。
+  - Files: [docs/workshop-steps/05_skills_toPPT/05_skills_toPPT.md](docs/workshop-steps/05_skills_toPPT/05_skills_toPPT.md) (+ 05_01/05_02)
+  - Verification: 可运行 `node pptx_summary/generate_ppt.js` 生成 `pptx_summary/health_platform_summary_blue.pptx`
 
 ## Phase 4: Verification
 - [ ] **Task 4.1**: 本地验证（可选）：确认文档指引能在本地启动前后端。

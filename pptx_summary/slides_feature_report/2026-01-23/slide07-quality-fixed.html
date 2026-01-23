@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html { background: #ffffff; }
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      height: 56pt;
+      background: #0B3A5C;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 34pt;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 18pt;
+      color: #FFFFFF;
+    }
+    .header p {
+      margin: 0;
+      font-size: 11pt;
+      color: #CFE9F3;
+    }
+    .content {
+      flex: 1;
+      padding: 12pt 30pt 8pt 30pt;
+      display: flex;
+      gap: 12pt;
+    }
+    .left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8pt;
+    }
+    .card {
+      background: #F7FAFC;
+      border: 1pt solid #E5E7EB;
+      border-radius: 10pt;
+      padding: 8pt 10pt;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 12pt;
+      color: #1F2937;
+    }
+    ul {
+      margin: 6pt 0 0 0;
+      padding-left: 16pt;
+      font-size: 10.5pt;
+      color: #4B5563;
+      line-height: 1.2;
+    }
+    li { margin: 3pt 0; }
+    .right {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 10pt;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.06);
+    }
+    .imgPlaceholder {
+      width: 100%;
+      height: 160pt;
+      border-radius: 8pt;
+      background: #EEF2FF;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#9CA3AF;
+      font-size:12pt;
+    }
+    .progress-chart { width:100%; display:flex; flex-direction:column; gap:8pt; }
+    .chart-row { display:flex; align-items:center; gap:8pt; }
+    .bar-label { width:120pt; font-size:11pt; color:#0f172a; }
+    .bar-track { background:#f1f5f9; border-radius:8pt; height:16pt; flex:1; position:relative; }
+    .bar-fill { background:#06b6d4; height:100%; border-radius:8pt; }
+    .bar-value { width:48pt; text-align:right; font-size:11pt; color:#0f172a; }
+    .caption { margin: 6pt 0 0 0; font-size: 10pt; color: #6B7280; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>质量体系与交付稳定性</h2>
+    <p>测试 + 流水线 + 报告</p>
+  </div>
+
+  <div class="content">
+    <div class="left">
+      <div class="card">
+        <h3>自动化测试</h3>
+        <ul>
+          <li>Pytest：后端单元测试覆盖关键校验与接口</li>
+          <li>Playwright：中文 UI 主路径回归（注册/登录/记录/成员等）</li>
+          <li>Playwright HTML 报告：默认生成，按需查看</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>CI/CD 工程增强</h3>
+        <ul>
+          <li>工作流健壮性：安全 tag、输出变量修正</li>
+          <li>部署后 E2E 可运行：忽略缺失测试结果、避免启动多余 web server</li>
+          <li>资产沉淀：周报/月报 PPT 与 HTML slides 可脚本生成</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>业务结果</h3>
+        <ul>
+          <li>减少 flaky 与人工回归成本</li>
+          <li>提升发版可预期性与回滚效率</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="progress-chart">
+        <div class="chart-row"><div class="bar-label"><p>Import Success Rate</p></div><div class="bar-track"><div class="bar-fill" style="width:85%"></div></div><div class="bar-value"><p>85%</p></div></div>
+        <div class="chart-row"><div class="bar-label"><p>Data Completeness</p></div><div class="bar-track"><div class="bar-fill" style="width:71%"></div></div><div class="bar-value"><p>71%</p></div></div>
+        <div class="chart-row"><div class="bar-label"><p>Validation Pass</p></div><div class="bar-track"><div class="bar-fill" style="width:94%"></div></div><div class="bar-value"><p>94%</p></div></div>
+      </div>
+      <p class="caption">交付链路与自动化进展（示意）</p>
+    </div>
+  </div>
+</body>
+</html>

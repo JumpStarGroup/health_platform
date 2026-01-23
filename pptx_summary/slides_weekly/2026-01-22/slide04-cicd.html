@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html { background: #ffffff; }
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #F7FAFC;
+    }
+    .header {
+      height: 64pt;
+      background: #1C5C8E;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 44pt;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 20pt;
+      color: #FFFFFF;
+    }
+    .header p {
+      margin: 0;
+      font-size: 12pt;
+      color: #D7E8F6;
+    }
+    .wrap {
+      flex: 1;
+      display: flex;
+      padding: 26pt 44pt 24pt 44pt;
+      gap: 18pt;
+    }
+    .left {
+      width: 420pt;
+      background: #FFFFFF;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 16pt 18pt;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.06);
+    }
+    .right {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 16pt 18pt;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.06);
+    }
+    h3 {
+      margin: 0;
+      font-size: 14pt;
+      color: #277884;
+    }
+    ul {
+      margin: 12pt 0 0 18pt;
+      padding: 0;
+      font-size: 13pt;
+      color: #374151;
+      line-height: 1.35;
+    }
+    li { margin: 6pt 0; }
+    .small {
+      margin: 12pt 0 0 0;
+      font-size: 11pt;
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>CI/CD & 部署变更</h2>
+    <p>目标：更稳定的构建/发布与更可靠的回归验证</p>
+  </div>
+
+  <div class="wrap">
+    <div class="left">
+      <h3>工作流改动</h3>
+      <ul>
+        <li>新增 safe image tag 计算逻辑，统一 Docker builds 的 tag 生成</li>
+        <li>修复 safe_ref 输出使用方式，避免引用错误导致的构建/部署失败</li>
+        <li>部署后 E2E job：缺失测试结果时不失败（降低假告警）</li>
+        <li>新增前端 URL 输出 + 回归测试步骤，便于自动化链路串联</li>
+      </ul>
+      <p class="small">主要文件：.github/workflows/Build-Deploy-K8S.yml</p>
+    </div>
+
+    <div class="right">
+      <h3>影响与收益</h3>
+      <ul>
+        <li>减少 tag/引用不一致引起的发布漂移</li>
+        <li>提升部署后回归流程的可诊断性（更明确的输出/步骤）</li>
+        <li>降低 CI 中“环境差异”导致的 flaky 失败</li>
+      </ul>
+      <p class="small">补充：Dockerfile.backend 也同步更新了版本相关说明。</p>
+    </div>
+  </div>
+</body>
+</html>

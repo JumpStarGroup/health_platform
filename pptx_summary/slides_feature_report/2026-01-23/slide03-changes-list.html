@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html { background: #ffffff; }
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #FFFFFF;
+    }
+    .header {
+      height: 64pt;
+      background: #0B3A5C;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 44pt;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 20pt;
+      color: #FFFFFF;
+    }
+    .header p {
+      margin: 0;
+      font-size: 12pt;
+      color: #CFE9F3;
+    }
+    .grid {
+      flex: 1;
+      display: flex;
+      gap: 6pt;
+      padding: 14pt 30pt 8pt 30pt;
+    }
+    .col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12pt;
+    }
+    .card {
+      background: #F7FAFC;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 14pt 16pt;
+    }
+    .tag {
+      display: inline-block;
+      background: #4ECDC4;
+      color: #073041;
+      font-size: 10pt;
+      font-weight: bold;
+      padding: 4pt 10pt;
+      border-radius: 999pt;
+      margin-bottom: 4pt;
+      line-height: 1;
+    }
+    .tag p { margin: 0; }
+    h3 {
+      margin: 0;
+      font-size: 11.5pt;
+      color: #1F2937;
+    }
+    p {
+      margin: 4pt 0 0 0;
+      font-size: 10.5pt;
+      color: #4B5563;
+      line-height: 1.15;
+    }
+    .footer {
+      padding: 0 44pt 18pt 44pt;
+    }
+    .footer p {
+      margin: 0;
+      font-size: 11pt;
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>功能变化清单（按模块）</h2>
+    <p>2026-01-08 ~ 2026-01-23</p>
+  </div>
+
+  <div class="grid">
+    <div class="col">
+      <div class="card" style="padding:8pt;">
+        <div class="tag"><p>健康记录</p></div>
+        <h3>更严格校验 + 防重复</h3>
+        <p>血压范围 30-250，且收缩压&gt;舒张压；心率可选 30-150；同成员同分钟重复记录拦截。</p>
+      </div>
+      <div class="card" style="padding:8pt;">
+        <div class="tag"><p>导出</p></div>
+        <h3>CSV 可用性提升</h3>
+        <p>UTF-8 BOM 兼容 Excel；RFC5987 filename* 支持中文文件名；支持按成员/标签/日期过滤导出。</p>
+      </div>
+      <div class="card" style="padding:8pt;">
+        <div class="tag"><p>成员</p></div>
+        <h3>Self/自己 保护</h3>
+        <p>默认成员不可编辑/删除；Self 资料与 Profile 同步，避免主档丢失或误操作。</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card" style="padding:8pt;">
+        <div class="tag"><p>批量导入</p></div>
+        <h3>Preview → Commit 流程</h3>
+        <p>先预览校验，再提交写入；未知成员可映射或新建；错误/跳过行可导出报告。</p>
+      </div>
+      <div class="card" style="padding:8pt;">
+        <div class="tag"><p>质量体系</p></div>
+        <h3>E2E 回归稳定可复现</h3>
+        <p>中文 UI 主路径覆盖注册/登录/切换语言/记录/成员等；减少 flaky，提高 CI 可信度。</p>
+      </div>
+      <div class="card" style="padding:8pt;">
+        <div class="tag"><p>报告资产</p></div>
+        <h3>PPT/HTML slides 沉淀</h3>
+        <p>周报/月报与专项报告可脚本生成，支持图文呈现，便于对内/对外汇报。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>结论：近期工作从“可用功能”走向“可规模化交付”，面向数据迁移、质量保障与可汇报性持续增强。</p>
+  </div>
+</body>
+</html>

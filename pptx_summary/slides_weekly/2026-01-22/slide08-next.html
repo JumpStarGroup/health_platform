@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    html { background: #ffffff; }
+    body {
+      width: 720pt;
+      height: 405pt;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #F7FAFC;
+    }
+    .header {
+      height: 64pt;
+      background: #1C5C8E;
+      display: flex;
+      align-items: center;
+      padding: 0 44pt;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 20pt;
+      color: #FFFFFF;
+    }
+    .wrap {
+      flex: 1;
+      display: flex;
+      gap: 18pt;
+      padding: 26pt 44pt 24pt 44pt;
+    }
+    .panel {
+      flex: 1;
+      background: #FFFFFF;
+      border: 1pt solid #E5E7EB;
+      border-radius: 14pt;
+      padding: 16pt 18pt;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.06);
+    }
+    h3 {
+      margin: 0;
+      font-size: 14pt;
+      color: #277884;
+    }
+    ul {
+      margin: 12pt 0 0 18pt;
+      padding: 0;
+      font-size: 13pt;
+      color: #374151;
+      line-height: 1.35;
+    }
+    li { margin: 6pt 0; }
+    .callout {
+      margin-top: 14pt;
+      border-left: 8pt solid #FE4447;
+      background: #FFF5F5;
+      border-radius: 10pt;
+      padding: 12pt 12pt;
+    }
+    .callout p {
+      margin: 0;
+      font-size: 12pt;
+      color: #7F1D1D;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>下周计划（建议）</h2>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <h3>交付与收敛</h3>
+      <ul>
+        <li>将 workshop 文档/脚本整理成可合并提交并补充校验步骤</li>
+        <li>针对 Build-Deploy-K8S 工作流做一次端到端验证（含部署后 E2E）</li>
+        <li>为周报 PPT 生成脚本加一个 npm 脚本入口（可选）</li>
+      </ul>
+      <div class="callout"><p>风险点：WIP 目录较多，建议尽早拆分提交，避免回滚困难。</p></div>
+    </div>
+    <div class="panel">
+      <h3>质量与可观测</h3>
+      <ul>
+        <li>补充 E2E 结果缺失的原因定位（是路径/上传/权限还是稳定性）</li>
+        <li>为关键 job 增加更清晰的日志与 artifacts 输出（定位更快）</li>
+        <li>若需要：把“月报/周报”模板沉淀到 docs/reports/README</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
