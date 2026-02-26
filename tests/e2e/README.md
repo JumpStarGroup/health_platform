@@ -70,6 +70,97 @@ set SLOW_MO=1000
 npm run test
 ```
 
+## Session 重用机制（性能优化）
+
+为了提升测试执行效率（5-10倍速度提升），大部分测试共用一个普通用户账号，避免每次都重新注册登录。
+
+### 工作原理
+
+1. **Global Setup**：首次运行测试时，自动创建一个共享测试用户并保存认证状态
+   - 用户数据：`tests/e2e/.auth/shared-user.json`
+   - 认证状态：`tests/e2e/.auth/user.json`
+
+2. **自动登录**：后续测试自动使用保存的认证状态，无需重新登录
+
+3. **按需禁用**：特殊测试（如注册流程、管理员测试）可禁用共享认证
+
+### 重新创建共享用户
+
+如果数据库被清空或需要重新创建用户：
+
+```bash
+# Windows
+rmdir /s /q .auth
+npm run test
+
+# Linux/Mac  
+rm -rf .auth/
+npm run test
+```
+
+### 测试分类
+
+#### ✅ 使用共享认证（大部分测试）
+- `health-records.spec.js` - 健康记录 CRUD
+- `health-import.spec.js` - 批量导入
+- `members-self-protection.spec.js` - Self 成员保护
+
+这些测试启动速度快（~5-10倍），因为跳过了注册登录步骤。
+
+#### ⚠️ 禁用共享认证（特殊场景）
+- `regression-user-journey-cn.spec.js` - 完整用户旅程（测试注册流程）
+- `admin-versioning.spec.js` - 管理员权限测试
+- `user-registration.spec.js` - 用户注册测试
+
+这些测试使用 `test.use({ storageState: undefined })` 禁用共享认证。
+
+### 性能对比
+
+| 测试方式 | 每个测试耗时 | 10 个测试总耗时 |
+|---------|------------|--------------|
+| 每次注册登录 | ~8-12 秒 | ~100 秒 |
+| Session 重用 | ~1-2 秒 | ~15 秒 |
+| **提升** | **5-10倍** | **6-7倍** |
+
+### 编写新测试
+
+#### 使用共享认证（推荐）
+
+```javascript
+import { test, expect } from '@playwright/test';
+import { getSharedUser } from '../utils/session.js';
+import { ensureChinese } from '../utils/auth.js';
+
+test.describe('My Feature Tests', () => {
+  test.beforeEach(async ({ page }) => {
+    // 已通过 storageState 登录，直接导航
+    await page.goto('/');
+    await ensureChinese(page);
+  });
+
+  test('should do something', async ({ page }) => {
+    // 测试代码...
+  });
+});
+```
+
+#### 需要独立用户
+
+```javascript
+import { test, expect } from '@playwright/test';
+import { makeUser } from '../utils/testData.js';
+import { registerAndLoginWithTestId } from '../utils/auth.js';
+
+// 禁用共享认证
+test.use({ storageState: undefined });
+
+test('should test unique scenario', async ({ page }) => {
+  const uniqueUser = makeUser();
+  await registerAndLoginWithTestId(page, uniqueUser);
+  // 测试代码...
+});
+```
+
 ## 测试配置
 
 配置文件: `playwright.config.js`

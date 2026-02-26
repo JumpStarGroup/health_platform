@@ -23,6 +23,9 @@ import { registerAndLoginWithTestId, ensureChinese } from '../utils/auth.js';
 import { makeUser, makeMemberName } from '../utils/testData.js';
 import { createMember, switchMemberInHeader } from '../utils/members.js';
 
+// This test requires full registration flow, so disable shared auth
+test.use({ storageState: undefined });
+
 test.describe('E2E Regression: Complete User Journey (CN)', () => {
   
   test('should complete full user journey in Chinese UI', async ({ page }) => {

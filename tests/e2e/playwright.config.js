@@ -12,6 +12,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 1, // Single worker to avoid conflicts
   reporter: [['html', { open: 'never' }], ['list']],
   timeout: 30000, // 30 second timeout per test
+  
+  // Global setup: Create shared test user once before all tests
+  globalSetup: './global-setup.js',
+  
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
     locale: 'zh-CN',
@@ -20,10 +24,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 10000, // 10 second timeout for actions
-    // Set headless: false to see the browser UI during test execution
-    // Use: npx playwright test --headed to override temporarily
     headless: process.env.HEADLESS !== 'false', // Set HEADLESS=false to see UI
     slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0, // Slow down by N ms per action
+    
+    // Use shared authentication state by default (tests can opt-out with test.use({ storageState: undefined }))
+    storageState: process.env.E2E_NO_SHARED_AUTH === '1' ? undefined : './.auth/user.json',
   },
   projects: [
     {

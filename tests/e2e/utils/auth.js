@@ -5,6 +5,38 @@ import { expect } from '@playwright/test';
 import { makeUser } from './testData.js';
 
 /**
+ * Ensure user is logged out before running auth flow
+ * @param {import('@playwright/test').Page} page
+ */
+async function ensureLoggedOut(page) {
+  await page.goto('/');
+
+  // Clear any client-side residue before interacting with UI
+  try {
+    await page.evaluate(() => {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+  } catch (e) {
+    // Ignore if storage is not accessible yet
+  }
+
+  // If logout button is visible, click it to invalidate server session
+  const logoutButton = page.getByRole('button', { name: /退出登录|Logout/i });
+  if (await logoutButton.isVisible().catch(() => false)) {
+    await logoutButton.click();
+    await expect(page).toHaveURL(/\/login/);
+  } else {
+    // If already on login, we're done
+    if (await page.url().includes('/login')) {
+      return;
+    }
+    // Otherwise navigate to login page to ensure clean state
+    await page.goto('/login');
+  }
+}
+
+/**
  * Detect current UI language on the page
  * @param {import('@playwright/test').Page} page
  * @returns {Promise<'zh'|'en'>} Current language
@@ -44,21 +76,42 @@ async function detectLanguage(page) {
  * @param {Object} [userData] - Optional user data; if not provided, generates new user
  * @returns {Promise<Object>} The created user data
  */
-export async function registerAndLoginWithTestId(page, userData) {
+export async function registerAndLoginWithTestId(page, userData, options = {}) {
   const user = userData || makeUser();
+  const { skipLogout = false } = options;
+
+  // Avoid shared or residual login state unless explicitly skipped
+  if (!skipLogout) {
+    await ensureLoggedOut(page);
+  }
 
   console.log(`Registering test user with testid selectors: ${user.email}`);
   await page.goto('/register');
-  
-  // Wait for page to load
-  await page.waitForLoadState('networkidle');
+
+  // Wait for page to load and registration form to appear
+  await page.waitForLoadState('domcontentloaded');
+  const registerUsername = page.getByTestId('register-username');
+  const registerLink = page.getByRole('link', { name: /注册|Register/i });
+
+  if (!(await registerUsername.isVisible({ timeout: 8000 }).catch(() => false))) {
+    // If redirected to login or register not visible, try navigating via login page
+    await page.goto('/login');
+    if (await registerLink.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await registerLink.click();
+    } else {
+      // Directly retry register route
+      await page.goto('/register');
+    }
+  }
+
+  await expect(registerUsername).toBeVisible({ timeout: 20000 });
   
   // Detect current UI language
   const currentLang = await detectLanguage(page);
   console.log(`Registration will use ${currentLang === 'zh' ? 'Chinese' : 'English'} UI`);
   
   // Fill registration form using stable data-testid selectors
-  await page.getByTestId('register-username').fill(user.username);
+  await registerUsername.fill(user.username);
   await page.getByTestId('register-email').fill(user.email);
   await page.getByTestId('register-password').fill(user.password);
   await page.getByTestId('register-confirm').fill(user.password);
@@ -117,9 +170,24 @@ export async function registerAndLoginWithTestId(page, userData) {
   await expect(loginSubmit.first()).toBeVisible({ timeout: 10000 });
   await expect(loginSubmit.first()).toBeEnabled();
   await loginSubmit.first().click();
-  
-  // Wait for successful login (redirect to dashboard/home)
-  await expect(page).toHaveURL(/.*dashboard.*|.*localhost:3000\/$/);
+
+  // Wait for successful login (redirect to dashboard/home/settings) or error toast
+  const loginError = page.locator('.ant-message-error');
+  const loginSuccessUrl = /.*dashboard.*|.*settings.*|.*localhost:3000\/$/;
+
+  const loginOutcome = await Promise.race([
+    page.waitForURL(loginSuccessUrl, { timeout: 12000 }).then(() => 'success'),
+    loginError.waitFor({ timeout: 12000 }).then(() => 'error'),
+  ]).catch(() => 'timeout');
+
+  if (loginOutcome === 'error') {
+    const errorText = (await loginError.first().innerText().catch(() => '')).trim();
+    throw new Error(`Login failed: ${errorText || 'unknown error'}`);
+  }
+
+  if (loginOutcome === 'timeout') {
+    throw new Error(`Login timed out, current URL: ${page.url()}`);
+  }
   
   // Ensure Chinese language (as per requirement)
   await ensureChinese(page);
