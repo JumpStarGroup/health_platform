@@ -139,6 +139,15 @@ export const memberAPI = {
   remove: (memberId) => api.delete(`/api/v1/members/${memberId}`),
 };
 
+// Medical History APIs
+export const medicalHistoryAPI = {
+  create: (data) => api.post('/api/v1/medical-history', data),
+  list: (params) => api.get('/api/v1/medical-history', { params }),
+  get: (id) => api.get(`/api/v1/medical-history/${id}`),
+  update: (id, data) => api.put(`/api/v1/medical-history/${id}`, data),
+  remove: (id) => api.delete(`/api/v1/medical-history/${id}`),
+};
+
 // Meta APIs
 export const metaAPI = {
   getVersion: () => api.get('/api/v1/version'),

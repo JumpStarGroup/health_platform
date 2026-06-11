@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Playwright configuration for Health Platform E2E tests
@@ -28,7 +32,7 @@ export default defineConfig({
     slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0, // Slow down by N ms per action
     
     // Use shared authentication state by default (tests can opt-out with test.use({ storageState: undefined }))
-    storageState: process.env.E2E_NO_SHARED_AUTH === '1' ? undefined : './.auth/user.json',
+    storageState: process.env.E2E_NO_SHARED_AUTH === '1' ? undefined : path.join(__dirname, '.auth', 'user.json'),
   },
   projects: [
     {
