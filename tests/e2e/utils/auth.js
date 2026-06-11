@@ -173,7 +173,10 @@ export async function registerAndLoginWithTestId(page, userData, options = {}) {
 
   // Wait for successful login (redirect to dashboard/home/settings) or error toast
   const loginError = page.locator('.ant-message-error');
-  const loginSuccessUrl = /.*dashboard.*|.*settings.*|.*localhost:3000\/$/;
+  const loginSuccessUrl = (url) => {
+    const pathname = url.pathname.replace(/\/+$/, '') || '/';
+    return pathname === '/' || pathname.startsWith('/dashboard') || pathname.startsWith('/settings');
+  };
 
   const loginOutcome = await Promise.race([
     page.waitForURL(loginSuccessUrl, { timeout: 12000 }).then(() => 'success'),
