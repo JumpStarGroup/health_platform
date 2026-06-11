@@ -235,6 +235,46 @@ Playwright 提供交互式录制工具：
 ```bash
 cd tests/e2e
 npx playwright codegen http://localhost:3000
+
+## E2E 运行与执行说明
+
+为方便在不同环境（本地 / 测试环境 / CI）运行 Playwright E2E，仓库提供了 `scripts\dev_run_e2e_regression.cmd` 辅助脚本，并通过环境变量控制运行行为。下面是常用运行方式与参数说明：
+
+- 默认行为
+  - Playwright `playwright.config.js` 使用 `use.baseURL = process.env.E2E_BASE_URL || 'http://localhost:3000'`。
+  - 配置中启用了 `webServer`（会在本地尝试运行 `npm start` 启动前端），除非设置 `E2E_DISABLE_WEBSERVER=1`。
+
+- 推荐脚本调用（仓库根目录下运行）
+  - 快速示例（预置演示测试环境快捷参数）：
+    ```bat
+    scripts\dev_run_e2e_regression.cmd testenv
+    ```
+    说明：`testenv` 模式会自动设置 `E2E_BASE_URL=https://test-env.example.com` 并禁用 webServer 自动启动（脚本内可修改默认 URL）。
+
+  - 指定目标环境并禁用本地启动：
+    ```bat
+    scripts\dev_run_e2e_regression.cmd https://your-test-env.example.com disable
+    ```
+
+  - 或用环境变量方式（PowerShell / cmd）：
+    ```bat
+    set E2E_BASE_URL=https://your-test-env.example.com
+    set E2E_DISABLE_WEBSERVER=1
+    call scripts\dev_run_e2e_regression.cmd
+    ```
+
+- 关于是否需要手动先启动前端
+  - 不需要：在默认（本地）场景下，Playwright 会尝试通过 `webServer` 配置自动启动前端（`npm start`）。
+  - 如果你手动启动了前端服务，Playwright 会检测到并复用（`reuseExistingServer: true`），不会重复启动。
+  - 在针对远端部署环境执行时，应设置 `E2E_DISABLE_WEBSERVER=1` 并提供 `E2E_BASE_URL`，以避免尝试在本机启动前端。
+
+- 注意：硬编码 URL
+  - 仓库中仍有部分测试文件包含硬编码 `http://localhost:3000` 的 `page.goto(...)` 调用，这类调用会忽略 `baseURL`。建议将这些改为相对路径（例如 `page.goto('/register')`）或改为使用配置变量以实现跨环境复用。
+
+如需，我可以：
+- 列出所有含 `http://localhost:3000` 的测试文件（供你人工决策），或
+- 在你同意后，替换为相对路径并提交变更。
+
 ```
 
 步骤：
