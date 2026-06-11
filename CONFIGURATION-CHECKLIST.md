@@ -3,7 +3,7 @@
 
 ## ✅ 已完成的文件修改
 
-### 1. CI/CD 流程 (`.github/workflows/ci.yml`)
+### 1. CI/CD 流程 (`.github/workflows/Build-Deploy-K8S.yml`)
 - ✅ 添加了三层配置加载逻辑
 - ✅ 支持 GitHub Secrets (`DATABASE_URL`, `JWT_SECRET`)
 - ✅ 支持 GitHub Variables (`CORS_ORIGINS`)
@@ -20,6 +20,7 @@
 - ✅ 添加了 `JWT_SECRET` 配置映射
 - ✅ 更新了后端环境变量引用
 - ✅ 添加了安全上下文配置
+- ✅ 添加了 Namespace Guardrails（`ResourceQuota` + `LimitRange`）
 
 ### 4. 文档
 - ✅ 创建了 `docs/SECURITY-CONFIG.md` - 安全配置管理指南
@@ -39,6 +40,11 @@
 - ❗ 设置分支保护规则
 - ❗ 添加环境 Secrets
 - ❗ 添加环境 Variables
+
+建议的环境 Secrets（示例）：
+- `KUBE_CONFIG`, `KUBE_CONTEXT`
+- `DATABASE_URL`, `JWT_SECRET`
+- `GHCR_USERNAME`, `GHCR_READ_TOKEN`（用于集群长期拉取 GHCR 镜像）
 
 ### 测试验证
 - ❗ 推送代码到 MVP 分支验证 CI/CD

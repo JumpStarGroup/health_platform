@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #ffffff; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #F7F9FA; font-family: Arial, sans-serif;
+  display: flex;
+}
+.header {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #1C5C8E; padding: 20pt 40pt;
+}
+.header h2 {
+  color: #ffffff; font-size: 32pt; margin: 0;
+}
+.content {
+  margin: 100pt 40pt 50pt 40pt; width: 640pt;
+  display: flex; gap: 20pt;
+}
+.text-col {
+  flex: 0 0 280pt;
+}
+.text-col h3 {
+  color: #1C5C8E; font-size: 17pt; margin: 0 0 12pt 0;
+}
+.metric-box {
+  background: #ffffff; padding: 12pt; border-radius: 8pt;
+  margin-bottom: 10pt;
+}
+.metric-box .label {
+  color: #7F8C8D; font-size: 10pt; margin: 0 0 4pt 0;
+}
+.metric-box .value {
+  color: #FF6B6B; font-size: 20pt; font-weight: bold;
+  margin: 0;
+}
+.text-col p {
+  font-size: 11pt; color: #2C3E50;
+  margin: 12pt 0 0 0;
+}
+.chart-col {
+  flex: 1;
+}
+.placeholder {
+  background: #E8F4F8; border: 2pt dashed #4ECDC4;
+  border-radius: 8pt; height: 245pt; display: flex;
+  align-items: center; justify-content: center;
+}
+.placeholder p {
+  color: #1C5C8E; font-size: 14pt; margin: 0;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h2>性能指标</h2>
+</div>
+<div class="content">
+  <div class="text-col">
+    <h3>批量导入性能</h3>
+    <div class="metric-box">
+      <p class="label">100 条记录</p>
+      <p class="value">&lt; 1 秒</p>
+    </div>
+    <div class="metric-box">
+      <p class="label">500 条记录</p>
+      <p class="value">~3 秒</p>
+    </div>
+    <div class="metric-box">
+      <p class="label">1000 条记录</p>
+      <p class="value">~8 秒</p>
+    </div>
+    <p><b>优化措施</b>：批量插入、索引优化</p>
+  </div>
+  <div class="chart-col">
+    <div id="perf-chart" class="placeholder">
+      <p>性能图表</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

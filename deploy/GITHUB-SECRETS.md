@@ -17,6 +17,15 @@
 Configure these secrets in your GitHub repository:
 `Settings` > `Secrets and variables` > `Actions`
 
+### 0. GHCR Pull Credentials (Required for Kubernetes)
+**Why**: Kubernetes nodes may need to pull images long after the workflow run finishes (node rotation, rescheduling, scaling). Short-lived tokens can cause `ImagePullBackOff`.
+
+- `GHCR_USERNAME`
+  - **Description**: Username for the account that owns the pull token (often a bot account).
+- `GHCR_READ_TOKEN`
+  - **Description**: Long-lived GitHub PAT with **minimum** permission `read:packages`.
+  - **Usage**: Used by the workflow to create/update the `ghcr-secret` imagePullSecret in each namespace.
+
 ### 1. KUBE_CONFIG (Required)
 **Description**: Base64-encoded kubeconfig file for your Kubernetes cluster  
 **Security**: Contains cluster credentials - keep secure!  
@@ -65,18 +74,19 @@ Use GitHub Environments for better security isolation:
 ### 🔐 Recommended RBAC Policy
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRole
 metadata:
-  namespace: health-platform
   name: github-actions-deployer
 rules:
 - apiGroups: [""]
-  resources: ["pods", "services", "configmaps", "namespaces"]
+  resources: ["namespaces"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 - apiGroups: ["apps"]
   resources: ["deployments", "replicasets"]
   verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ```
+
+> Note: `namespaces` is a cluster-scoped resource. If you don't want CI to create namespaces, switch to a pre-provisioned namespace model and use a namespaced `Role` instead.
 
 ### 🌍 Dynamic Configuration
 - **CORS Origins**: Automatically configured based on LoadBalancer IP

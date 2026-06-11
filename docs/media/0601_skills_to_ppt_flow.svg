@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="420" viewBox="0 0 1400 420">
+  <defs>
+    <style>
+      .bg { fill: #0b1220; }
+      .card { fill: #111b2e; stroke: #2a3a57; stroke-width: 2; }
+      .title { fill: #e7eefc; font: 700 28px Arial, sans-serif; }
+      .text { fill: #c7d2fe; font: 400 18px Arial, sans-serif; }
+      .muted { fill: #9fb1d6; font: 400 16px Arial, sans-serif; }
+      .accent { fill: #22c55e; }
+      .arrow { stroke: #8aa4d4; stroke-width: 3; fill: none; marker-end: url(#m); }
+    </style>
+    <marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 Z" fill="#8aa4d4"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="420"/>
+
+  <text class="title" x="60" y="70">Skills → Summary → PPTX</text>
+  <text class="muted" x="60" y="102">A lightweight workflow to turn repo changes into a shareable deck</text>
+
+  <!-- Box 1 -->
+  <rect class="card" x="60" y="150" width="290" height="180" rx="18"/>
+  <circle class="accent" cx="95" cy="185" r="8"/>
+  <text class="text" x="115" y="192">Collect Inputs</text>
+  <text class="muted" x="85" y="228">• Workshop docs</text>
+  <text class="muted" x="85" y="256">• Workflow + manifests</text>
+  <text class="muted" x="85" y="284">• CHANGELOG / PR notes</text>
+
+  <!-- Box 2 -->
+  <rect class="card" x="430" y="150" width="290" height="180" rx="18"/>
+  <circle class="accent" cx="465" cy="185" r="8"/>
+  <text class="text" x="485" y="192">Use Skills</text>
+  <text class="muted" x="455" y="228">• Summarize changes</text>
+  <text class="muted" x="455" y="256">• Draft slide outline</text>
+  <text class="muted" x="455" y="284">• Create visuals (optional)</text>
+
+  <!-- Box 3 -->
+  <rect class="card" x="800" y="150" width="290" height="180" rx="18"/>
+  <circle class="accent" cx="835" cy="185" r="8"/>
+  <text class="text" x="855" y="192">Generate Deck</text>
+  <text class="muted" x="825" y="228">• Edit HTML slides</text>
+  <text class="muted" x="825" y="256">• Run node generator</text>
+  <text class="muted" x="825" y="284">• Export .pptx</text>
+
+  <!-- Box 4 -->
+  <rect class="card" x="1170" y="150" width="170" height="180" rx="18"/>
+  <circle class="accent" cx="1205" cy="185" r="8"/>
+  <text class="text" x="1225" y="192">Share</text>
+  <text class="muted" x="1195" y="228">• Review</text>
+  <text class="muted" x="1195" y="256">• Publish</text>
+  <text class="muted" x="1195" y="284">• Iterate</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M350 240 C380 240, 400 240, 430 240"/>
+  <path class="arrow" d="M720 240 C750 240, 770 240, 800 240"/>
+  <path class="arrow" d="M1090 240 C1120 240, 1140 240, 1170 240"/>
+
+  <text class="muted" x="60" y="380">Assets referenced in workshop steps should live under docs/media and be linked as ../../media/&lt;file&gt;</text>
+</svg>

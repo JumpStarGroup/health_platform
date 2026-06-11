@@ -10,7 +10,7 @@ from sqlalchemy import and_, select
 from io import StringIO
 from urllib.parse import quote
 import csv
-from ..manager.health_manager import HealthManager
+from ..manager.health_manager import HealthManager, DuplicateHealthRecordError
 from ..manager.member_manager import MemberManager
 from ..models import RecordSubject, Member
 from ..utils import get_pagination_params, make_pagination, error
@@ -139,6 +139,9 @@ def create_record():
     user_id = get_jwt_identity()
     data = request.get_json(force=True) or {}
 
+    # Ensure self member exists so we can apply legacy-unmapped semantics consistently
+    self_member = member_mgr.get_or_create_self_member(user_id)
+
     clean, errors = _validate_health_record_payload(data, for_update=False)
     if errors:
         return jsonify(error("400", "Validation error", details=errors)), 400
@@ -171,11 +174,27 @@ def create_record():
         if not m or m.status != "active":
             return jsonify(error("404", "Member not found")), 404
     else:
-        m = member_mgr.get_or_create_self_member(user_id)
-        subject_member_id = m.id
+        subject_member_id = self_member.id
 
-    rec = manager.create(user_id=user_id, systolic=systolic, diastolic=diastolic, heart_rate=heart_rate,
-                         timestamp=ts, tags=tags, note=note)
+    try:
+        rec = manager.create(
+            user_id=user_id,
+            systolic=systolic,
+            diastolic=diastolic,
+            heart_rate=heart_rate,
+            timestamp=ts,
+            tags=tags,
+            note=note,
+            subject_member_id=subject_member_id,
+            treat_unmapped_as_self=(subject_member_id == self_member.id),
+        )
+    except DuplicateHealthRecordError:
+        # Keep service contract stable: treat duplicate records as validation errors.
+        return jsonify(error(
+            "400",
+            "Duplicate record",
+            details={"timestamp": ["a record already exists for this member in the same minute"]},
+        )), 400
     # Link record to subject
     rs = RecordSubject()
     hh = member_mgr.ensure_default_household(user_id)
@@ -473,7 +492,30 @@ def update_record(rec_id: int):
     clean, errors = _validate_health_record_payload(data, for_update=True, current=rec)
     if errors:
         return jsonify(error("400", "Validation error", details=errors)), 400
-    # apply updates
+    
+    # Check for duplicate if timestamp is being updated
+    if "timestamp" in data:
+        ts_raw = data.get("timestamp")
+        try:
+            new_ts = _as_db_datetime(_parse_iso_datetime(ts_raw))
+        except (TypeError, ValueError):
+            return jsonify(error("400", "Invalid timestamp")), 400
+        
+        # Get subject_member_id for this record
+        from ..extensions import db
+        rs = RecordSubject.query.filter_by(record_id=rec.id).first()
+        if rs:
+            subject_member_id = rs.member_id
+            # Check if new timestamp would create duplicate
+            if manager.check_duplicate_on_update(user_id, rec.id, new_ts, subject_member_id):
+                return jsonify(error(
+                    "400",
+                    "Duplicate record",
+                    details={"timestamp": ["a record already exists for this member at the same time"]},
+                )), 400
+        rec.timestamp = new_ts
+    
+    # apply other updates
     for k in ("systolic", "diastolic", "heart_rate"):
         if k in clean:
             setattr(rec, k, clean[k])

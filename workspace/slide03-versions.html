@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #ffffff; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #F7F9FA; font-family: Arial, sans-serif;
+  display: flex;
+}
+.header {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #1C5C8E; padding: 20pt 40pt;
+}
+.header h2 {
+  color: #ffffff; font-size: 32pt; margin: 0;
+}
+.content {
+  margin: 100pt 40pt 50pt 40pt; width: 640pt;
+  display: flex; gap: 15pt;
+}
+.col {
+  flex: 1; background: #ffffff; padding: 18pt;
+  border-radius: 8pt; border-top: 5pt solid #4ECDC4;
+}
+.col h3 {
+  color: #1C5C8E; font-size: 18pt; margin: 0 0 5pt 0;
+}
+.col .date {
+  color: #FF6B6B; font-size: 11pt; font-weight: bold;
+  margin: 0 0 12pt 0;
+}
+.col ul {
+  margin: 0; padding-left: 18pt;
+}
+.col li {
+  font-size: 12pt; color: #2C3E50; margin-bottom: 8pt;
+  line-height: 1.4;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h2>版本发布记录</h2>
+</div>
+<div class="content">
+  <div class="col">
+    <h3>v1.1.0</h3>
+    <p class="date">2026-01-15</p>
+    <ul>
+      <li>E2E测试稳定性100%</li>
+      <li>测试报告自动生成</li>
+    </ul>
+  </div>
+  <div class="col">
+    <h3>v1.0.1</h3>
+    <p class="date">2025-12-24</p>
+    <ul>
+      <li>批量导入Excel/CSV</li>
+      <li>重复记录防护</li>
+      <li>智能成员匹配</li>
+    </ul>
+  </div>
+  <div class="col">
+    <h3>v1.0.0</h3>
+    <p class="date">2025-11-28</p>
+    <ul>
+      <li>三级权限管理</li>
+      <li>密码安全增强</li>
+      <li>图表异常高亮</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

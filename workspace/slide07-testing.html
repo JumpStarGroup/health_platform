@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html { background: #ffffff; }
+body {
+  width: 720pt; height: 405pt; margin: 0; padding: 0;
+  background: #F7F9FA; font-family: Arial, sans-serif;
+  display: flex;
+}
+.header {
+  position: absolute; top: 0; left: 0; right: 0;
+  background: #1C5C8E; padding: 20pt 40pt;
+}
+.header h2 {
+  color: #ffffff; font-size: 32pt; margin: 0;
+}
+.content {
+  margin: 100pt 40pt 50pt 40pt; width: 640pt;
+  display: flex; gap: 20pt;
+}
+.text-col {
+  flex: 0 0 260pt;
+}
+.text-col h3 {
+  color: #1C5C8E; font-size: 17pt; margin: 0 0 12pt 0;
+}
+.stat-card {
+  background: #ffffff; padding: 12pt; border-radius: 8pt;
+  text-align: center; margin-bottom: 10pt;
+}
+.stat-card .number {
+  color: #4ECDC4; font-size: 28pt; font-weight: bold;
+  margin: 0 0 3pt 0;
+}
+.stat-card .label {
+  color: #7F8C8D; font-size: 10pt; margin: 0;
+}
+.improvement {
+  background: #ffffff; padding: 12pt; border-radius: 8pt;
+  border-left: 4pt solid #FF6B6B;
+}
+.improvement h4 {
+  color: #1C5C8E; font-size: 13pt; margin: 0 0 8pt 0;
+}
+.improvement ul {
+  margin: 0; padding-left: 16pt;
+}
+.improvement li {
+  font-size: 10pt; color: #2C3E50; margin-bottom: 4pt;
+}
+.chart-col {
+  flex: 1;
+}
+.placeholder {
+  background: #E8F4F8; border: 2pt dashed #4ECDC4;
+  border-radius: 8pt; height: 245pt; display: flex;
+  align-items: center; justify-content: center;
+}
+.placeholder p {
+  color: #1C5C8E; font-size: 14pt; margin: 0;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <h2>测试覆盖</h2>
+</div>
+<div class="content">
+  <div class="text-col">
+    <h3>测试统计</h3>
+    <div class="stat-card">
+      <p class="number">37</p>
+      <p class="label">单元测试用例</p>
+    </div>
+    <div class="stat-card">
+      <p class="number">100%</p>
+      <p class="label">测试通过率</p>
+    </div>
+    <div class="improvement">
+      <h4>v1.1.0 改进</h4>
+      <ul>
+        <li>选择器稳定性优化</li>
+        <li>HTML报告生成</li>
+      </ul>
+    </div>
+  </div>
+  <div class="chart-col">
+    <div id="test-chart" class="placeholder">
+      <p>测试覆盖图表</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

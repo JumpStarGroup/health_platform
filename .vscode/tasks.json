@@ -2,6 +2,54 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "dev: start backend (Terminal 1)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\dev_start_backend.cmd"
+			],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "dev: start frontend (Terminal 2)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\dev_start_frontend.cmd"
+			],
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "e2e: regression user journey (Terminal 3)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\dev_run_e2e_regression.cmd"
+			],
+			"isBackground": false,
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			},
+			"problemMatcher": []
+		},
+		{
 			"label": "run unit tests - fast",
 			"type": "shell",
 			"command": "python -m pytest -q",
@@ -21,6 +69,112 @@
 			"command": "python -m pytest -q",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "debug import test",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pytest",
+				"tests/test_health_import.py::test_preview_and_commit_creates_member",
+				"-vv"
+			],
+			"group": "build"
+		},
+		{
+			"label": "debug import call",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-c",
+				"from io import BytesIO; from src.app import create_app; from tests.conftest import TestConfig; app=create_app(TestConfig); client=app.test_client();\nresp=client.post('/api/v1/auth/register', json={'username':'u','email':'e@e.com','password':'pw123456','age':20,'gender':'male','weight':70});\nlogin=client.post('/api/v1/auth/login', json={'email':'e@e.com','password':'pw123456'}).get_json(); headers={'Authorization': f\"Bearer {login['access_token']}\"};\ncsv=b'\\xe6\\x88\\x90\\xe5\\x91\\x98\\xe5\\x90\\x8d\\xe7\\xa7\\xb0,\\xe6\\xb5\\x8b\\xe9\\x87\\x8f\\xe6\\x97\\xb6\\xe9\\x97\\xb4,\\xe6\\x94\\xb6\\xe7\\xbc\\xa9\\xe5\\x8e\\x8b,\\xe8\\x88\\x92\\xe5\\xbc\\xb5\\xe5\\x8e\\x8b,\\xe5\\xbf\\x83\\xe7\\x8e\\x87,\\xe6\\xa0\\x87\\xe7\\xad\\xbe,\\xe5\\xa4\\x87\\xe6\\xb3\\xa8\\nSelf,2025-12-19 08:30:00,120,80,72,,\\n';\nresp=client.post('/api/v1/health/import/preview', headers=headers, data={'file': (BytesIO(csv), 'x.csv')}, content_type='multipart/form-data');\nprint(resp.status_code, resp.get_data(as_text=True))\n"
+			],
+			"group": "build"
+		},
+		{
+			"label": "run debug import script",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"debug_import.py"
+			],
+			"group": "build"
+		},
+		{
+			"label": "run debug import script",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"debug_import.py"
+			],
+			"group": "build"
+		},
+		{
+			"label": "debug import test verbose",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pytest",
+				"tests/test_health_import.py::test_preview_and_commit_creates_member",
+				"-vv",
+				"-s"
+			],
+			"group": "build"
+		},
+		{
+			"label": "run debug import script",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"debug_import.py"
+			],
+			"group": "build"
+		},
+		{
+			"label": "single pytest",
+			"type": "shell",
+			"command": "python",
+			"args": [
+				"-m",
+				"pytest",
+				"-q"
+			],
+			"group": "build"
+		}
+	,
+		{
+			"label": "start services (backend + frontend)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\start_services.cmd"
+			],
+			"isBackground": false,
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "run e2e: regression (Playwright)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\run_regression.cmd"
+			],
+			"isBackground": false,
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
 		}
 	]
 }

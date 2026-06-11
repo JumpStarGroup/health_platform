@@ -68,7 +68,7 @@
   - [ ] `KUBE_CONTEXT`
   - [ ] `KUBE_CONFIG`
   - [ ] `GHCR_USERNAME`
-  - [ ] `GHCR_TOKEN`
+  - [ ] `GHCR_READ_TOKEN`
 - [ ] Environment Variables 已配置（可选，有智能默认值）：
   - [ ] `CORS_ORIGINS` （不设置时自动基于 NAMESPACE 生成）
   - [ ] `BACKEND_REPLICAS`
@@ -109,7 +109,7 @@ git push origin production-release
 ## 🔍 故障排查
 
 ### 常见问题
-1. **镜像拉取失败**：检查 GHCR_USERNAME/TOKEN 配置
+1. **镜像拉取失败**：检查 GHCR_USERNAME/GHCR_READ_TOKEN 配置（应为长期 `read:packages` 凭据，不建议用短生命周期 token）
 2. **配置缺失**：验证三层配置加载顺序
 3. **权限错误**：确认 kubectl context 和权限
 4. **容器启动失败**：检查安全上下文配置

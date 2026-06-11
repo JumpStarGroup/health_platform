@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-01-15
+
+### 改进
+- **E2E 回归测试稳定性**：注册/登录/中文语言切换/健康记录/成员/修改全流程可稳定跑通
+- **选择器鲁棒性**：避免 Ant Design Select 下拉渲染/遮挡导致的 flaky
+- **报告生成**：Playwright HTML 报告默认生成但不自动启动本地服务（需要时手动 `npx playwright show-report`）
+
 ## [1.0.0] - 2025-11-28
 
 ### 新增功能

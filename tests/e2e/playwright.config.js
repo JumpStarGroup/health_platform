@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Playwright configuration for Health Platform E2E tests
@@ -10,14 +14,25 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 1 : 1, // Single worker to avoid conflicts
-  reporter: [['html'], ['list']],
+  reporter: [['html', { open: 'never' }], ['list']],
   timeout: 30000, // 30 second timeout per test
+  
+  // Global setup: Create shared test user once before all tests
+  globalSetup: './global-setup.js',
+  
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
+    locale: 'zh-CN',
+    timezoneId: 'Asia/Shanghai',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     actionTimeout: 10000, // 10 second timeout for actions
+    headless: process.env.HEADLESS !== 'false', // Set HEADLESS=false to see UI
+    slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0, // Slow down by N ms per action
+    
+    // Use shared authentication state by default (tests can opt-out with test.use({ storageState: undefined }))
+    storageState: process.env.E2E_NO_SHARED_AUTH === '1' ? undefined : path.join(__dirname, '.auth', 'user.json'),
   },
   projects: [
     {
@@ -34,17 +49,19 @@ export default defineConfig({
     //   use: { ...devices['Desktop Safari'] },
     // },
   ],
-  // Auto-start frontend if not running
-  webServer: [
-    {
-      command: 'npm start',
-      url: 'http://localhost:3000',
-      reuseExistingServer: true,
-      timeout: 120000,
-      cwd: '../../frontend',
-      env: {
-        BROWSER: 'none'
-      }
-    }
-  ],
+  // Auto-start frontend if not running (can be disabled for deployed E2E)
+  webServer: process.env.E2E_DISABLE_WEBSERVER === '1'
+    ? undefined
+    : [
+        {
+          command: 'npm start',
+          url: 'http://localhost:3000',
+          reuseExistingServer: true,
+          timeout: 120000,
+          cwd: '../../frontend',
+          env: {
+            BROWSER: 'none'
+          }
+        }
+      ],
 });

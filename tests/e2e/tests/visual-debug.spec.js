@@ -89,16 +89,16 @@ test.describe('Visual Debug Test', () => {
     
     // Fill form slowly
     console.log('📋 Filling health record form...');
-    await page.fill('input[placeholder="收缩压"]', '120');
+    await page.fill('input[placeholder*="收缩压"]', '120');
     await page.waitForTimeout(500);
     
-    await page.fill('input[placeholder="舒张压"]', '80');
+    await page.fill('input[placeholder*="舒张压"]', '80');
     await page.waitForTimeout(500);
     
-    await page.fill('input[placeholder="心率"]', '72');
+    await page.fill('input[placeholder*="心率"]', '72');
     await page.waitForTimeout(500);
     
-    await page.fill('textarea[placeholder*="注信息"]', 'Visual test record');
+    await page.fill('textarea[data-testid="notes"]', 'Visual test record');
     await page.waitForTimeout(1000);
     
     // Submit form
