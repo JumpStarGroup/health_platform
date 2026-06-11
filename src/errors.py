@@ -14,5 +14,6 @@ def register_error_handlers(app):
 
     @app.errorhandler(Exception)
     def handle_exception(e: Exception):
+        app.logger.exception("Unhandled application error", exc_info=e)
         body = error(code="500", message="Internal Server Error")
         return jsonify(body), 500
