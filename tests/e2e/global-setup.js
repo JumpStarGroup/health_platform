@@ -18,6 +18,12 @@ const __dirname = path.dirname(__filename);
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth', 'user.json');
 const SHARED_USER_PATH = path.join(__dirname, '.auth', 'shared-user.json');
 
+export function getBaseURL(config) {
+  return config.projects?.find((project) => project.use?.baseURL)?.use.baseURL
+    || process.env.E2E_BASE_URL
+    || 'http://localhost:3000';
+}
+
 export default async function globalSetup(config) {
   console.log('\n=== Global Setup: Creating Shared Test User ===');
   
@@ -37,7 +43,7 @@ export default async function globalSetup(config) {
   // Launch browser and perform registration + login
   const browser = await chromium.launch();
   const context = await browser.newContext({
-    baseURL: config.use?.baseURL || 'http://localhost:3000',
+    baseURL: getBaseURL(config),
     locale: 'zh-CN',
     timezoneId: 'Asia/Shanghai',
   });
