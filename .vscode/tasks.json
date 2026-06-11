@@ -15,19 +15,7 @@
 				"reveal": "always",
 				"panel": "dedicated"
 			},
-			"problemMatcher": {
-				"owner": "copilot-dev",
-				"pattern": [
-					{
-						"regexp": "a^"
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "a^",
-					"endsPattern": "a^"
-				}
-			}
+			"problemMatcher": []
 		},
 		{
 			"label": "dev: start frontend (Terminal 2)",
@@ -43,19 +31,7 @@
 				"reveal": "always",
 				"panel": "dedicated"
 			},
-			"problemMatcher": {
-				"owner": "copilot-dev",
-				"pattern": [
-					{
-						"regexp": "a^"
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "a^",
-					"endsPattern": "a^"
-				}
-			}
+			"problemMatcher": []
 		},
 		{
 			"label": "e2e: regression user journey (Terminal 3)",
@@ -166,6 +142,39 @@
 				"-q"
 			],
 			"group": "build"
+		}
+	,
+		{
+			"label": "start services (backend + frontend)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\start_services.cmd"
+			],
+			"isBackground": false,
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "run e2e: regression (Playwright)",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/c",
+				"scripts\\run_regression.cmd"
+			],
+			"isBackground": false,
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			},
+			"problemMatcher": []
 		}
 	]
 }
