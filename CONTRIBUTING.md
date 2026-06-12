@@ -54,7 +54,7 @@ docs: update README with version management
 
 - **MAJOR**：不兼容的 API 变更
 - **MINOR**：向下兼容的功能新增
-- **PATCH**：向下兼容的问题修复
+- **PATCH**：向下兼容的问题修复。
 
 ### 发布步骤
 
@@ -106,22 +106,132 @@ VERSION 文件
 5. 等待代码审查
 6. 合并后删除分支
 
-## 分支管理规范
+## 分支命名、worktree 使用与版本发布
 
-- 主分支：`main`，始终保持可部署状态。
-- 开发分支：`dev_*` 或 `feature/*`，用于新功能开发或大改动。
-- 修复分支：`fix/*`，用于 Bug 修复。
-- 分支命名建议：`feature/功能描述`、`fix/问题描述`。
-- 所有功能/修复分支需通过 PR 合并，禁止直接推送到 `main`。
-- 合并前需确保 CI 测试通过。
-- 合并后及时删除临时分支。
+### 分支命名规范
 
-### 发布与环境映射
+本仓库默认采用轻量 trunk 流，`main` 始终保持可部署状态。
 
-1. 将 `feature/*` 或 `fix/*` 合并至 `main` 后，CI 会以 `main` 最新提交构建并部署到测试/准生产环境，供 QA 与回归验证。
-2. 验证通过后，在 `main` 头部创建版本 Tag（如 `v1.1.0`），同步更新 `CHANGELOG.md` 与 `VERSION`。
-3. 生产环境仅接受带 Tag 的构建，部署脚本以 Tag 触发，确保可追溯与快速回滚。
-4. 如需要更长的回归周期，可按需临时创建 `release/*` 分支，验证完成后再合并回 `main` 并按上面步骤发布。
+- `main`：主干分支，所有功能最终合并到这里。
+- `feature/<scope>-<desc>`：新功能开发分支，例如 `feature/health-import-ui`。
+- `fix/<scope>-<desc>`：缺陷修复分支，例如 `fix/login-token-refresh`。
+- `release/<version>`：短期发布分支，仅在需要更长回归周期时临时使用。
+- `hotfix/<version>`：线上紧急修复分支，仅用于生产问题快速修复。
+
+约定：
+- 分支名称尽量短、语义明确，优先使用英文小写和连字符。
+- 默认不长期维护 `develop`、`staging` 等环境分支，除非团队明确需要更复杂的发布链路。
+- 所有功能分支和修复分支都应通过 PR 合并，禁止直接推送到 `main`。
+
+### worktree 使用规范
+
+`git branch` 负责管理代码历史线，`git worktree` 负责在本地同时检出多个独立工作目录。
+当需要并行开发多个任务时，推荐“一个分支对应一个 worktree”。
+
+适用场景：
+- 一个 worktree 用于 UI 调整，另一个 worktree 用于后端功能开发。
+- 一个 worktree 用于修复问题，另一个 worktree 用于联调测试。
+- 需要同时保留不同分支的本地状态，避免来回切分支。
+
+推荐方式：
+```bash
+git worktree add ../health-platform-ui feature/health-ui-refresh
+git worktree add ../health-platform-features feature/new-health-import
+```
+
+约定：
+- 每个 worktree 使用独立目录，避免相互覆盖。
+- 每个 worktree 维护各自的 `.env`、虚拟环境、`instance/` 数据库和前端依赖目录。
+- worktree 只用于本地并行开发，不替代分支策略，也不改变发布流程。
+- `.gitignore` 规则仍然生效，但由于每个 worktree 都是独立目录，被忽略的本地文件也会自然隔离在各自目录中。
+- 如果需要共享代码修改，仍然通过分支合并和 PR 完成，不要直接在多个 worktree 中手工同步。
+
+### 版本发布流程
+
+本仓库采用语义化版本，格式为 `MAJOR.MINOR.PATCH`。
+
+- `MAJOR`：不兼容的 API 变更。
+- `MINOR`：向下兼容的功能新增。
+- `PATCH`：向下兼容的问题修复。
+
+发布时建议不直接修改 `main`，而是先确定版本号，再使用发布分支完成版本号和变更日志更新：
+
+1. 功能开发分支和修复分支先通过 PR 合并到 `main`。
+2. 发布前先确定本次版本号，例如 `1.1.1`；分支名、`VERSION` 和最终 Tag 应保持一致。
+3. 从最新 `main` 拉出 `release/<version>` 分支，例如 `release/1.1.1`。
+4. 在 `release/<version>` 分支上更新 `VERSION` 和 `CHANGELOG.md`。
+5. 通过 PR 将 `release/<version>` 合并回 `main`。
+6. 在 `main` 上创建版本 Tag，例如 `v1.1.1`。
+7. 推送 `main` 和 tags，触发正式发布。
+
+Tag 规则：
+- Tag 格式统一为 `vMAJOR.MINOR.PATCH`，例如 `v1.1.1`。
+- Tag 版本号必须与 `VERSION` 文件内容一致，只是前面多一个 `v` 前缀。
+- Tag 应创建在 `main` 上的发布合并提交之后，而不是创建在功能分支上。
+- 建议使用 annotated tag，便于审计和回溯。
+
+示例：
+```bash
+git checkout main
+git pull origin main
+git checkout -b release/1.1.0
+
+# 更新 VERSION 和 CHANGELOG.md 后提交
+git add VERSION CHANGELOG.md
+git commit -m "chore: release v1.1.0"
+
+# 发起 PR: release/1.1.0 -> main
+# 合并后在 main 上打 tag
+git checkout main
+git pull origin main
+git tag v1.1.0
+git push origin main --tags
+```
+
+说明：
+- `VERSION` 是前后端统一读取的版本源。
+- `release/<version>`、`VERSION` 和 `v<version>` 应使用同一版本号。
+- 生产环境应优先使用 tag 触发的构建，便于追溯和回滚。
+- 如需紧急修复线上问题，可创建 `hotfix/<version>` 分支，修复后同样通过 PR 合并回 `main` 并打 tag。
+- 如需要更长回归周期，可临时使用 `release/*` 分支，验证完成后再合并回 `main` 并按正常流程发版。
+
+### 发布记录与交接
+
+为避免遗忘并方便新成员理解，发布过程应保留可追溯记录：
+
+- `CHANGELOG.md`：作为正式发布说明的主要记录。
+- PR 描述：记录本次发布的范围、风险点和验证结果。
+- Git tag：作为代码仓库中的版本锚点。
+- 如需要更详细的交接说明，可补充到 `docs/releases/` 下的发布说明文件。
+
+建议发布管理员在完成发布后同步检查：
+1. `VERSION` 是否已更新。
+2. `CHANGELOG.md` 是否包含本次变更。
+3. `release/<version>`、`VERSION`、`v<version>` 是否一致。
+4. tag 是否已推送到远端。
+5. 必要时在 `docs/releases/` 或 PR 评论中记录发布结论和回滚注意事项。
+
+### Release PR 检查规则（建议）
+
+当 PR 的目标分支是 `main`，且源分支为 `release/<version>` 或 `hotfix/<version>` 时，必须执行以下检查：
+
+1. 检查时机：
+   - 在 PR 创建、更新、合并前的 CI 阶段执行。
+   - 目标是防止“版本已改好但缺少必需文件”或“版本号不一致”的问题进入主干。
+
+2. 检查内容：
+   - `VERSION` 必须被更新。
+   - `CHANGELOG.md` 必须包含本次版本条目。
+   - `docs/releases/RELEASE_NOTES_v<version>.md` 必须存在，并且标题与版本一致。
+   - `release/<version>`、`VERSION`、`v<version>` 必须保持一致。
+
+3. 检查方式：
+   - 通过 CI 中的脚本 `python3 scripts/check_release_pr.py` 自动校验。
+   - 若检查失败，PR 不应被合并到 `main`。
+
+4. 失败时的处理：
+   - 先补齐文档与版本文件，再重新推送 PR。
+   - 如发现版本号不一致，先修正分支名、`VERSION`、`CHANGELOG.md` 与 release notes，再重跑 CI。
 
 > 说明：若团队规模扩大或需要多环境长期并行，可参考 `docs/BRANCH-ENVIRONMENT-STRATEGY.md` 中的 GitFlow 扩展方案；默认情况下以此轻量主干流程为准。
 
