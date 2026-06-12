@@ -154,7 +154,7 @@ git worktree add ../health-platform-features feature/new-health-import
 - `MINOR`：向下兼容的功能新增。
 - `PATCH`：向下兼容的问题修复。
 
-发布时不直接修改 `main`，而是先确定版本号，再使用发布分支完成版本号和变更日志更新：
+发布时建议不直接修改 `main`，而是先确定版本号，再使用发布分支完成版本号和变更日志更新：
 
 1. 功能开发分支和修复分支先通过 PR 合并到 `main`。
 2. 发布前先确定本次版本号，例如 `1.1.1`；分支名、`VERSION` 和最终 Tag 应保持一致。
