@@ -226,7 +226,7 @@ git push origin main --tags
    - `release/<version>`、`VERSION`、`v<version>` 必须保持一致。
 
 3. 检查方式：
-   - 通过 CI 中的脚本 `python scripts/check_release_pr.py` 自动校验。
+   - 通过 CI 中的脚本 `python3 scripts/check_release_pr.py` 自动校验。
    - 若检查失败，PR 不应被合并到 `main`。
 
 4. 失败时的处理：
