@@ -87,7 +87,9 @@ def main() -> int:
             errors.append(f"VERSION content ({current_version}) does not match branch version ({version}).")
 
     changelog_file = REPO_ROOT / "CHANGELOG.md"
-    if changelog_file.exists() and f"## [{version}]" not in changelog_file.read_text(encoding="utf-8"):
+    if not changelog_file.exists():
+        errors.append("CHANGELOG.md does not exist.")
+    elif f"## [{version}]" not in changelog_file.read_text(encoding="utf-8"):
         errors.append(f"CHANGELOG.md does not contain an entry for version {version}.")
 
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
