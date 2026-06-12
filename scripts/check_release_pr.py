@@ -26,11 +26,18 @@ def run_git(*args: str) -> str:
 
 
 def get_branch_name() -> str:
+    # In GitHub Actions pull_request runs, checkout is detached and
+    # `git rev-parse --abbrev-ref HEAD` typically returns "HEAD".
+    for key in ("GITHUB_HEAD_REF", "GITHUB_REF_NAME"):
+        value = os.getenv(key)
+        if value:
+            return value
+
     try:
-        return run_git("rev-parse", "--abbrev-ref", HEAD_REF)
+        name = run_git("rev-parse", "--abbrev-ref", HEAD_REF)
+        return "" if name == "HEAD" else name
     except Exception:
         return ""
-
 
 def get_changed_files() -> list[str]:
     try:
