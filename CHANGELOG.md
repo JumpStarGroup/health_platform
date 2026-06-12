@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1] - 2026-06-12
+
+### 改进
+- 增加 release/hotfix PR 自动校验，避免遗漏 `VERSION`、`CHANGELOG.md` 与 release note。
+- 补充 release 分支与发布流程文档说明，便于管理员执行版本发布与回滚检查。
+- 优化 CI 工作流，对 release/hotfix PR 提供版本发布前门禁。
+
 ## [1.1.0] - 2026-01-15
 
 ### 改进
