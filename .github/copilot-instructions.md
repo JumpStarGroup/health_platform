@@ -1,4 +1,4 @@
-## Health Platform – Copilot Instructions
+## Health Platform – Top Level Instructions
 
 ### 项目概述
 健康记录平台：为家庭成员追踪血压、心率等健康指标的综合系统。

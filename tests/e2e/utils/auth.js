@@ -259,10 +259,8 @@ export async function ensureChinese(page) {
   try { await page.keyboard.press('Escape'); } catch {}
 
   const visibleDropdowns = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');
-  const chineseOption = page
-    .locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden) [role="option"]')
-    .filter({ hasText: /中文（简体）|中文/ })
-    .first();
+  const chineseOption = visibleDropdowns.getByText(/中文（简体）|中文/, { exact: false }).first();
+  const fallbackChineseOption = visibleDropdowns.locator('[role="option"]').filter({ hasText: /^zh$/i }).first();
 
   // Open dropdown (AntD Select can intercept clicks on the internal input; selection item / arrow is more reliable)
   let opened = false;
@@ -297,7 +295,8 @@ export async function ensureChinese(page) {
       try { await expect(visibleDropdowns.first()).toBeVisible({ timeout: 1000 }); } catch {}
     }
 
-    if (await chineseOption.isVisible({ timeout: 500 }).catch(() => false)) {
+    if (await chineseOption.isVisible({ timeout: 500 }).catch(() => false) ||
+        await fallbackChineseOption.isVisible({ timeout: 500 }).catch(() => false)) {
       opened = true;
       break;
     }
@@ -312,8 +311,11 @@ export async function ensureChinese(page) {
   }
 
   // Select Chinese option (label is "中文（简体）" in both zh/en locale files)
-  await expect(chineseOption).toBeVisible({ timeout: 5000 });
-  await chineseOption.click({ force: true });
+  const optionToClick = (await chineseOption.isVisible({ timeout: 1000 }).catch(() => false))
+    ? chineseOption
+    : fallbackChineseOption;
+  await expect(optionToClick).toBeVisible({ timeout: 5000 });
+  await optionToClick.click({ force: true });
 
   // Click Save (submit) button within the same Settings language form
   const languageForm = page.locator('form').filter({ has: languageFormItem }).first();
