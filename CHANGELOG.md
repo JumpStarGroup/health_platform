@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.1] - 2026-06-12
+## [1.1.615] - 2026-06-15
 
 ### 改进
 - update playwright to support compatibility with language switcher and Ant Design 5
