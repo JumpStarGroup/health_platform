@@ -237,9 +237,9 @@ git push origin main --tags
 
 ## DevOps & CI/CD 规范
 
-- 所有 PR 自动触发单元测试（Pytest）和 E2E 测试（Playwright）。
-- 通过 GitHub Actions 实现自动化测试和构建。
-- 生产部署需通过主分支触发，自动构建 Docker 镜像并推送到注册中心。
+- 所有 PR 到 `main` 自动触发 `pr-validation.yml`，执行后端测试、前端构建；`release/*` 与 `hotfix/*` 分支额外执行发布内容校验。
+- 合并到 `main` 后由 `deploy-staging.yml` 自动构建镜像并部署到 staging/test 环境，验证通过后再准备生产发布。
+- 生产部署只由 `vMAJOR.MINOR.PATCH` release tag 触发 `release-production.yml`，且必须通过 GitHub `production` Environment 审批。
 - 关键配置（如数据库密码、JWT 密钥）通过 GitHub Secrets 管理，禁止明文提交。
 
 详细 CI/CD 流程与环境变量配置见 [部署指南](deploy/README.md) 和 [安全配置](docs/SECURITY-CONFIG.md)。
