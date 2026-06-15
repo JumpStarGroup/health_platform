@@ -42,12 +42,12 @@
 ## 🔄 当前 CI/CD 流程
 
 ### 工作流程
-1. **代码推送** → MVP/* 分支 (开发) 或 main 分支 (生产)
-2. **环境选择** → 自动或手动选择目标环境
-3. **构建镜像** → 推送到 GitHub Container Registry
-4. **配置加载** → 三层配置合并和验证（CORS_ORIGINS 智能默认生成）
-5. **密钥创建** → 自动创建 imagePullSecrets
-6. **应用部署** → kubectl apply 到目标集群
+1. **PR 到 main** → `pr-validation.yml` 执行单元测试、前端构建；release/hotfix 分支额外执行发布校验。
+2. **合并到 main** → `deploy-staging.yml` 构建镜像并部署到 staging/test 环境。
+3. **测试环境验证** → staging 部署完成后自动执行回归 E2E。
+4. **main 发布提交打 release tag** → `release-production.yml` 校验 `vMAJOR.MINOR.PATCH` tag、`VERSION`、`CHANGELOG.md` 和 release notes。
+5. **生产审批与部署** → GitHub `production` Environment 审批通过后部署到生产环境。
+6. **生产回归** → 生产部署完成后自动执行回归 E2E 并上传报告。
 
 ### 安全特性
 - 🔒 敏感信息完全从代码库移除
@@ -60,9 +60,10 @@
 
 ### GitHub Environment 配置
 - [ ] **development** 环境已创建
+- [ ] **staging** 环境已创建
 - [ ] **production** 环境已创建
 - [ ] 分支保护规则已设置
-- [ ] 必需的 Secrets 已添加：
+- [ ] `staging` 与 `production` 必需的 Secrets 已添加：
   - [ ] `DATABASE_URL`
   - [ ] `JWT_SECRET` 
   - [ ] `KUBE_CONTEXT`
@@ -86,24 +87,27 @@ kubectl config view --minify --raw
 
 ## 🚀 部署使用方法
 
-### 开发环境部署
+### 测试环境部署
 ```bash
-# 推送到 MVP 分支自动触发
-git push origin MVP-feature-name
+# PR 合并到 main 后自动触发 deploy-staging.yml
+git push origin main
 ```
 
 ### 生产环境部署  
 ```bash
-# 创建 PR 到 main 分支
-git checkout -b production-release
-git push origin production-release
-# 合并 PR 后需要手动批准部署
+# release PR 合并到 main 且 staging 验证通过后，在 main 发布提交上打 tag
+git checkout main
+git pull origin main
+git tag -a v1.1.1 -m "Release v1.1.1"
+git push origin v1.1.1
+
+# release-production.yml 自动触发，进入 production Environment 审批后部署
 ```
 
 ### 手动部署
 ```bash
 # 使用 GitHub Actions 手动触发
-# Repository → Actions → Deploy Health Platform → Run workflow
+# Repository → Actions → Deploy Staging / Release Production / E2E Regression Test → Run workflow
 ```
 
 ## 🔍 故障排查

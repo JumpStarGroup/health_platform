@@ -1,0 +1,311 @@
+# Build images from main and deploy them to the staging Kubernetes environment.
+
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip image build and deploy an existing staging image tag'
+        required: false
+        default: false
+        type: boolean
+      image_tag:
+        description: 'Existing image tag to deploy when skip_build is true'
+        required: false
+        default: 'staging'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-staging-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    if: github.event_name != 'workflow_dispatch' || inputs.skip_build != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract backend image metadata
+        id: meta_backend
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/health-platform-backend
+          flavor: |
+            latest=false
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=raw,value=staging
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.backend
+          push: true
+          tags: ${{ steps.meta_backend.outputs.tags }}
+          labels: ${{ steps.meta_backend.outputs.labels }}
+
+      - name: Extract frontend image metadata
+        id: meta_frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository_owner }}/health-platform-frontend
+          flavor: |
+            latest=false
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=raw,value=staging
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.frontend.nonroot
+          push: true
+          tags: ${{ steps.meta_frontend.outputs.tags }}
+          labels: ${{ steps.meta_frontend.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    if: always() && (needs.build-and-push.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.skip_build == true && needs.build-and-push.result == 'skipped'))
+    runs-on: ubuntu-latest
+    environment: staging
+    outputs:
+      frontend_url: ${{ steps.frontend_url.outputs.url }}
+    env:
+      DEPLOY_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_build == true && inputs.image_tag || 'staging' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/k8s-set-context@v1
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          context: ${{ secrets.KUBE_CONTEXT }}
+
+      - name: Install envsubst
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext-base
+
+      - name: Create imagePullSecrets for GHCR
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}
+          GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        run: |
+          ENV_FILE=deploy/config/staging.env
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "Missing environment config file: $ENV_FILE"
+            exit 1
+          fi
+          sed -i 's/\r$//' "$ENV_FILE"
+          set -a
+          source "$ENV_FILE"
+          set +a
+
+          : "${NAMESPACE:?NAMESPACE must be set in staging env file}"
+          if [ -z "$GHCR_USERNAME" ] || [ -z "$GHCR_TOKEN" ]; then
+            echo "Missing GHCR pull credentials. Set GHCR_USERNAME and GHCR_READ_TOKEN in the staging GitHub Environment Secrets."
+            exit 1
+          fi
+
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl delete secret ghcr-secret --namespace="$NAMESPACE" --ignore-not-found=true
+          kubectl create secret docker-registry ghcr-secret \
+            --namespace="$NAMESPACE" \
+            --docker-server=ghcr.io \
+            --docker-username="$GHCR_USERNAME" \
+            --docker-password="$GHCR_TOKEN" \
+            --docker-email="${GHCR_USERNAME}@users.noreply.github.com"
+          kubectl get secret ghcr-secret --namespace="$NAMESPACE"
+
+      - name: Deploy to Kubernetes
+        env:
+          KUBE_CONTEXT: ${{ secrets.KUBE_CONTEXT }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
+        run: |
+          export ENVIRONMENT=staging
+
+          ENV_FILE=deploy/config/${ENVIRONMENT}.env
+          if [ ! -f "$ENV_FILE" ]; then
+            echo "Missing environment config file: $ENV_FILE"
+            ls -la deploy/config || true
+            exit 1
+          fi
+          sed -i 's/\r$//' "$ENV_FILE"
+          set -a
+          source "$ENV_FILE"
+          set +a
+
+          export REGISTRY_URL="ghcr.io/${{ github.repository_owner }}"
+          export IMAGE_TAG="$DEPLOY_IMAGE_TAG"
+
+          if [ -n "$CORS_ORIGINS" ]; then
+            export CORS_ORIGINS="$CORS_ORIGINS"
+          else
+            export CORS_ORIGINS="http://localhost:3000,http://127.0.0.1:3000,http://frontend-svc.${NAMESPACE}.svc.cluster.local:80"
+          fi
+
+          if [ -z "$DATABASE_URL" ]; then
+            export DATABASE_URL="sqlite:///instance/health_platform.db"
+            export BACKEND_REPLICAS=1
+            echo "DATABASE_URL not set in staging secrets; falling back to SQLite and forcing a single backend replica."
+          fi
+          if [ -z "$JWT_SECRET" ]; then
+            export JWT_SECRET="$(openssl rand -hex 32)"
+            echo "JWT_SECRET not set in staging secrets; generated an ephemeral secret for this deployment."
+          fi
+          export DATABASE_URL="$DATABASE_URL"
+          export JWT_SECRET="$JWT_SECRET"
+
+          : "${NAMESPACE:?NAMESPACE must be set}"
+          : "${REGISTRY_URL:?REGISTRY_URL must be set}"
+          : "${IMAGE_TAG:?IMAGE_TAG must be set}"
+          : "${BACKEND_REPLICAS:?BACKEND_REPLICAS must be set in .env file}"
+          : "${FRONTEND_REPLICAS:?FRONTEND_REPLICAS must be set in .env file}"
+
+          if [ -n "$KUBE_CONTEXT" ]; then
+            kubectl config use-context "$KUBE_CONTEXT"
+          fi
+
+          echo "Deploying staging image tag: ${IMAGE_TAG}"
+          echo "Staging namespace: ${NAMESPACE}"
+          echo "DATABASE_URL: $(echo "$DATABASE_URL" | sed 's/\/\/.*@/\/\/***:***@/g')"
+          echo "JWT_SECRET: $(echo "$JWT_SECRET" | sed 's/./*/g')"
+
+          VARS='$NAMESPACE $REGISTRY_URL $IMAGE_TAG $BACKEND_REPLICAS $FRONTEND_REPLICAS $BACKEND_MEMORY_REQUEST $BACKEND_CPU_REQUEST $BACKEND_MEMORY_LIMIT $BACKEND_CPU_LIMIT $FRONTEND_MEMORY_REQUEST $FRONTEND_CPU_REQUEST $FRONTEND_MEMORY_LIMIT $FRONTEND_CPU_LIMIT $FLASK_ENV $CORS_ORIGINS $DATABASE_URL $JWT_SECRET $SERVICE_TYPE'
+          envsubst "$VARS" < deploy/k8s-template.yaml > deploy/k8s-${ENVIRONMENT}-generated.yaml
+
+          if grep -qE '^\s*name:\s*$|^\s*replicas:\s*$' deploy/k8s-${ENVIRONMENT}-generated.yaml; then
+            echo "Generated YAML contains empty required fields (name or replicas); aborting"
+            sed -n '1,200p' deploy/k8s-${ENVIRONMENT}-generated.yaml
+            exit 1
+          fi
+
+          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f deploy/k8s-${ENVIRONMENT}-generated.yaml
+
+          set +e
+          kubectl rollout status deployment/backend -n "$NAMESPACE" --timeout=300s
+          BACKEND_STATUS=$?
+          kubectl rollout status deployment/frontend -n "$NAMESPACE" --timeout=300s
+          FRONTEND_STATUS=$?
+          if [ $BACKEND_STATUS -ne 0 ] || [ $FRONTEND_STATUS -ne 0 ]; then
+            echo "Rollout failed, collecting diagnostics"
+            kubectl get deploy -n "$NAMESPACE" -o wide || true
+            kubectl get pods -n "$NAMESPACE" -o wide || true
+            kubectl get events -n "$NAMESPACE" --sort-by=.lastTimestamp | tail -50 || true
+            kubectl describe deployment backend -n "$NAMESPACE" || true
+            kubectl describe deployment frontend -n "$NAMESPACE" || true
+            kubectl describe pods -n "$NAMESPACE" | sed -n '1,400p' || true
+            for pod in $(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[*].metadata.name}'); do
+              echo "# Logs for pod: $pod"
+              kubectl logs "$pod" -n "$NAMESPACE" --tail=200 || true
+            done
+            exit 1
+          fi
+          set -e
+
+          kubectl get pods,svc -n "$NAMESPACE"
+
+      - name: Export frontend URL
+        id: frontend_url
+        run: |
+          ENV_FILE=deploy/config/staging.env
+          sed -i 's/\r$//' "$ENV_FILE"
+          set -a
+          source "$ENV_FILE"
+          set +a
+
+          addr=""
+          for i in $(seq 1 60); do
+            ip=$(kubectl get svc frontend-svc -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+            hostname=$(kubectl get svc frontend-svc -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+            addr="${ip:-$hostname}"
+            if [ -n "$addr" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [ -z "$addr" ]; then
+            echo "Frontend EXTERNAL-IP is still pending; cannot run E2E."
+            exit 1
+          fi
+
+          echo "url=http://${addr}/" >> $GITHUB_OUTPUT
+
+  post-deploy-e2e:
+    needs: deploy
+    if: needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+          cache-dependency-path: tests/e2e/package-lock.json
+
+      - name: Install E2E dependencies
+        working-directory: ./tests/e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./tests/e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E regression test against staging
+        working-directory: ./tests/e2e
+        env:
+          E2E_BASE_URL: ${{ needs.deploy.outputs.frontend_url }}
+          E2E_DISABLE_WEBSERVER: '1'
+        run: npx playwright test tests/regression-user-journey-cn.spec.js --reporter=html,list
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-playwright-report
+          path: tests/e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-test-results
+          path: tests/e2e/test-results/
+          if-no-files-found: ignore
+          retention-days: 7

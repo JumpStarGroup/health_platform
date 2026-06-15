@@ -154,7 +154,7 @@ git worktree add ../health-platform-features feature/new-health-import
 - `MINOR`：向下兼容的功能新增。
 - `PATCH`：向下兼容的问题修复。
 
-发布时不直接修改 `main`，而是先确定版本号，再使用发布分支完成版本号和变更日志更新：
+发布时建议不直接修改 `main`，而是先确定版本号，再使用发布分支完成版本号和变更日志更新：
 
 1. 功能开发分支和修复分支先通过 PR 合并到 `main`。
 2. 发布前先确定本次版本号，例如 `1.1.1`；分支名、`VERSION` 和最终 Tag 应保持一致。
@@ -226,7 +226,7 @@ git push origin main --tags
    - `release/<version>`、`VERSION`、`v<version>` 必须保持一致。
 
 3. 检查方式：
-   - 通过 CI 中的脚本 `python scripts/check_release_pr.py` 自动校验。
+   - 通过 CI 中的脚本 `python3 scripts/check_release_pr.py` 自动校验。
    - 若检查失败，PR 不应被合并到 `main`。
 
 4. 失败时的处理：
@@ -237,9 +237,9 @@ git push origin main --tags
 
 ## DevOps & CI/CD 规范
 
-- 所有 PR 自动触发单元测试（Pytest）和 E2E 测试（Playwright）。
-- 通过 GitHub Actions 实现自动化测试和构建。
-- 生产部署需通过主分支触发，自动构建 Docker 镜像并推送到注册中心。
+- 所有 PR 到 `main` 自动触发 `pr-validation.yml`，执行后端测试、前端构建；`release/*` 与 `hotfix/*` 分支额外执行发布内容校验。
+- 合并到 `main` 后由 `deploy-staging.yml` 自动构建镜像并部署到 staging/test 环境，验证通过后再准备生产发布。
+- 生产部署只由 `vMAJOR.MINOR.PATCH` release tag 触发 `release-production.yml`，且必须通过 GitHub `production` Environment 审批。
 - 关键配置（如数据库密码、JWT 密钥）通过 GitHub Secrets 管理，禁止明文提交。
 
 详细 CI/CD 流程与环境变量配置见 [部署指南](deploy/README.md) 和 [安全配置](docs/SECURITY-CONFIG.md)。

@@ -113,11 +113,11 @@ Resolve every error the script reports before proceeding. Common failures and fi
 
 | Error | Fix |
 |---|---|
-| `Missing VERSION update` | Confirm VERSION was staged and committed |
-| `VERSION content does not match branch version` | Update `VERSION` to match the branch suffix |
-| `Missing CHANGELOG.md update` | Add the `## [<version>]` section |
-| `Missing release notes file` | Create `docs/releases/RELEASE_NOTES_v<version>.md` |
-| `Release notes header does not match` | First line must be `# Release Notes - v<version>` |
+| `Missing VERSION update in this release/hotfix PR.` | Confirm `VERSION` was staged and committed |
+| `Missing CHANGELOG.md update in this release/hotfix PR.` | Add the `## [<version>]` section |
+| `Missing release notes file: docs/releases/RELEASE_NOTES_v<version>.md` | Create `docs/releases/RELEASE_NOTES_v<version>.md` |
+| `VERSION content (<current>) does not match branch version (<version>).` | Update `VERSION` to exactly match the branch suffix |
+| `Release notes header does not match the expected tag name.` | First line must be `# Release Notes - v<version>`
 
 ### Phase 6 — Open the Pull Request
 
@@ -176,6 +176,6 @@ Next    : Review & merge the PR, then run `git tag v<version> && git push origin
 
 - Never `git push` directly to `main`.
 - Never create a tag before the PR is merged.
-- If `scripts/prepare-mvp-deployment.sh` or similar scripts no longer exist, remove the `git rm` reference from the commit — don't fail the release for a missing script.
+- If a script referenced in `git rm` no longer exists, skip that step — don't fail the release for a missing script.
 - If the user says "hotfix", use `hotfix/<version>` as the branch name; the rest of the workflow is identical.
 - Always confirm the version number with the user before creating the branch.

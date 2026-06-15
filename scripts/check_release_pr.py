@@ -26,11 +26,18 @@ def run_git(*args: str) -> str:
 
 
 def get_branch_name() -> str:
+    # In GitHub Actions pull_request runs, checkout is detached and
+    # `git rev-parse --abbrev-ref HEAD` typically returns "HEAD".
+    for key in ("GITHUB_HEAD_REF", "GITHUB_REF_NAME"):
+        value = os.getenv(key)
+        if value:
+            return value
+
     try:
-        return run_git("rev-parse", "--abbrev-ref", HEAD_REF)
+        name = run_git("rev-parse", "--abbrev-ref", HEAD_REF)
+        return "" if name == "HEAD" else name
     except Exception:
         return ""
-
 
 def get_changed_files() -> list[str]:
     try:
@@ -80,7 +87,9 @@ def main() -> int:
             errors.append(f"VERSION content ({current_version}) does not match branch version ({version}).")
 
     changelog_file = REPO_ROOT / "CHANGELOG.md"
-    if changelog_file.exists() and f"## [{version}]" not in changelog_file.read_text(encoding="utf-8"):
+    if not changelog_file.exists():
+        errors.append("CHANGELOG.md does not exist.")
+    elif f"## [{version}]" not in changelog_file.read_text(encoding="utf-8"):
         errors.append(f"CHANGELOG.md does not contain an entry for version {version}.")
 
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
