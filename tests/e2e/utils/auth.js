@@ -259,8 +259,8 @@ export async function ensureChinese(page) {
   try { await page.keyboard.press('Escape'); } catch {}
 
   const visibleDropdowns = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');
-  const chineseOptionContent = page
-    .locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option-content')
+  const chineseOption = page
+    .locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden) [role="option"]')
     .filter({ hasText: /中文（简体）|中文/ })
     .first();
 
@@ -297,7 +297,7 @@ export async function ensureChinese(page) {
       try { await expect(visibleDropdowns.first()).toBeVisible({ timeout: 1000 }); } catch {}
     }
 
-    if (await chineseOptionContent.isVisible({ timeout: 500 }).catch(() => false)) {
+    if (await chineseOption.isVisible({ timeout: 500 }).catch(() => false)) {
       opened = true;
       break;
     }
@@ -312,8 +312,8 @@ export async function ensureChinese(page) {
   }
 
   // Select Chinese option (label is "中文（简体）" in both zh/en locale files)
-  await expect(chineseOptionContent).toBeVisible({ timeout: 5000 });
-  await chineseOptionContent.click();
+  await expect(chineseOption).toBeVisible({ timeout: 5000 });
+  await chineseOption.click({ force: true });
 
   // Click Save (submit) button within the same Settings language form
   const languageForm = page.locator('form').filter({ has: languageFormItem }).first();
