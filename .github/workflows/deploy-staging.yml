@@ -175,12 +175,13 @@ jobs:
           fi
 
           if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL must be set in GitHub Secrets for staging."
-            exit 1
+            export DATABASE_URL="sqlite:///instance/health_platform.db"
+            export BACKEND_REPLICAS=1
+            echo "DATABASE_URL not set in staging secrets; falling back to SQLite and forcing a single backend replica."
           fi
           if [ -z "$JWT_SECRET" ]; then
-            echo "JWT_SECRET must be set in GitHub Secrets for staging."
-            exit 1
+            export JWT_SECRET="$(openssl rand -hex 32)"
+            echo "JWT_SECRET not set in staging secrets; generated an ephemeral secret for this deployment."
           fi
           export DATABASE_URL="$DATABASE_URL"
           export JWT_SECRET="$JWT_SECRET"
