@@ -13,6 +13,7 @@
 2. 点击 **New environment**
 3. 创建以下环境：
    - `development`
+   - `staging`
    - `production`
 
 ### 2. 配置分支保护规则
@@ -23,10 +24,16 @@
 - **Branch name pattern**: `MVP*` (匹配所有 MVP 分支)
 - **Required reviewers**: 0 (开发环境无需审批)
 
+#### Staging 环境
+- **Environment name**: `staging`
+- **Deployment branches**: Selected branches
+- **Branch name pattern**: `main`
+- **Required reviewers**: 0 (合并到 main 后自动部署测试环境)
+
 #### Production 环境
 - **Environment name**: `production`
 - **Deployment branches**: Selected branches  
-- **Branch name pattern**: `main`
+- **Tag pattern**: `v*.*.*` (仅 release tag 触发生产发布)
 - **Required reviewers**: 1+ (生产环境需要审批)
 - **Wait timer**: 0 minutes
 - **Prevent self-review**: ✅ 启用
@@ -75,6 +82,24 @@ DATABASE_URL=mysql+pymysql://username:password@your-server.mysql.database.azure.
 
 # JWT 密钥（生产）- 使用强随机字符串
 JWT_SECRET=your-super-secure-random-jwt-secret-key-here
+
+# Kubernetes 配置
+KUBE_CONTEXT=copilot
+
+# GitHub Container Registry 认证
+GHCR_USERNAME=your-github-username
+GHCR_READ_TOKEN=your-personal-access-token-with-read:packages
+```
+
+### Staging 环境密钥
+进入 `staging` 环境，添加以下 Secrets：
+
+```bash
+# 数据库连接（测试）
+DATABASE_URL=sqlite:///instance/health_platform.db
+
+# JWT 密钥（测试）
+JWT_SECRET=your-staging-jwt-secret-key-here
 
 # Kubernetes 配置
 KUBE_CONTEXT=copilot
