@@ -258,7 +258,7 @@ export async function ensureChinese(page) {
   try { await page.keyboard.press('Escape'); } catch {}
   try { await page.keyboard.press('Escape'); } catch {}
 
-  const visibleDropdowns = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');ant-select-dropdown
+  const visibleDropdowns = page.locator('.ant-select-dropdown:not(.ant-select-dropdown-hidden)');
   const chineseOption = visibleDropdowns.getByText(/中文（简体）|中文/, { exact: false }).first();
   const fallbackChineseOption = visibleDropdowns.locator('[role="option"]').filter({ hasText: /^zh$/i }).first();
 
