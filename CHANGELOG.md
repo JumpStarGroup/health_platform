@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [1.1.615] - 2026-06-15
 
 ### 改进
-- update playwright to support compatibility with language switcher and Ant Design 5
+- 更新 Playwright E2E 语言切换选择器，兼容 Ant Design 5。
 - 增加 release/hotfix PR 自动校验，避免遗漏 `VERSION`、`CHANGELOG.md` 与 release note。
 - 补充 release 分支与发布流程文档说明，便于管理员执行版本发布与回滚检查。
 - 优化 CI 工作流，对 release/hotfix PR 提供版本发布前门禁。
