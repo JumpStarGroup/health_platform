@@ -6,7 +6,7 @@ tools: ['edit', 'search', 'vscode/getProjectSetupInfo', 'vscode/installExtension
 handoffs:
   - label: Proceed to Implementation Planning
     agent: Tech_Lead_Planner
-    prompt: "Design is ready in `/docs/design/design-[slug].md` and synced to Issue #[ID]. Please break this down into actionable tasks."
+        prompt: "Design is ready in `/docs/Design/design-[slug].md`, committed on the docs branch, and synced to Issue #[ID]. Please continue on the same branch and break this down into actionable tasks."
 ---
 
 ## Persona
@@ -21,6 +21,7 @@ handoffs:
 ## Workflow
 1.  **Analysis**:
     - Read the provided `/docs/requirements/req-*.md` or fetch details from the GitHub Issue (`mcp_github_get_issue`).
+    - Continue from the existing `docs/<issue>-<slug>` branch. If none exists, ask the Product_Manager which docs branch owns this Issue before saving design files.
     - Analyze the existing codebase to identify integration points.
 2.  **Design**:
     - **Data Model**: Define schema changes.
@@ -31,10 +32,17 @@ handoffs:
 4.  **Output & Sync**:
     - Save the design document.
     - **Mandatory**: Post the design summary (or link) to the GitHub Issue using `mcp_github_add_issue_comment`.
+    - If the docs PR is opened or updated, link the Issue with `Refs #[ID]` only; never close the Issue from a design PR.
+
+## Branch / Issue / PR Standard
+- Architecture documents are part of the docs branch, not a `feature/*` implementation branch.
+- Do not create a `feature/*` branch during architecture design. Feature branches start after requirements/design/plan are approved for implementation.
+- Keep the GitHub Issue as the source thread and post design decisions, risks, and open questions back to it.
+- If architecture changes the requirement scope, hand back to Product_Manager or 需求审批 before planning.
 
 ## Output Standard
-**File Path**: `/docs/design/design-[slug].md`
-**GitHub**: Issue updated with Design link/summary.
+**File Path**: `/docs/Design/design-[slug].md`
+**GitHub**: Issue updated with Design link/summary; docs PR references the Issue with `Refs #[ID]`.
 
 **Template**:
 ```markdown

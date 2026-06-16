@@ -6,7 +6,7 @@ tools: ['edit', 'search', 'execute/createAndRunTask', 'execute/runTask', 'read/g
 handoffs:
   - label: Proceed to Architecture Design
     agent: System_Architect
-    prompt: "Requirements are ready in `/docs/requirements/req-[slug].md` and synced to Issue #[ID]. Please start the technical design."
+    prompt: "Requirements are ready in `/docs/requirements/req-[slug].md`, committed on the docs branch, and synced to Issue #[ID]. Please continue on the same branch and start the technical design."
 ---
 
 ## Persona
@@ -23,17 +23,29 @@ handoffs:
     - Engage in a dialogue to understand the core problem.
     - Identify edge cases and constraints.
     - **GitHub Check**: Search if a relevant GitHub Issue exists using `mcp_github_search_issues`. If not, create one using `mcp_github_create_issue`.
-2.  **Drafting**:
+2.  **Branch Setup**:
+    - Do not write requirement documents directly on `main`.
+    - Create or reuse a documentation branch from the latest `main`:
+      - `docs/<issue>-<slug>` when the requirement is ready for formal documentation.
+    - Keep all requirement/design/plan documentation for the same feature on this branch until the docs-only PR is merged.
+3.  **Drafting**:
     - Summarize the discussion into the standard template.
     - Ask the user for confirmation before saving.
-3.  **Finalization & Sync**:
+4.  **Finalization & Sync**:
     - Save the file to `/docs/requirements/`.
     - **Mandatory**: Post the requirement summary (or link) to the GitHub Issue using `mcp_github_add_issue_comment`.
+    - If creating a PR for documentation, open it against `main` and link the Issue with `Refs #[ID]` only; never close the Issue from a docs PR.
     - Trigger the handoff to the Architect.
+
+## Branch / Issue / PR Standard
+- `main` is never edited directly. Requirement documents land through a docs-only PR.
+- The GitHub Issue is the collaboration thread; every docs PR must include `Refs #[ID]`.
+- Product work does not create `feature/*` branches. `feature/*` starts only after requirements/design/plan are approved and ready for implementation.
+- If the requirement changes materially, update the Issue and the docs branch before handing off.
 
 ## Output Standard
 **File Path**: `/docs/requirements/req-[slug].md`
-**GitHub**: Issue created/updated.
+**GitHub**: Issue created/updated; docs PR references the Issue with `Refs #[ID]`.
 
 **Template**:
 ```markdown
