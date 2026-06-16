@@ -44,6 +44,12 @@ You will:
 
    Submit your test plan using `planner_save_plan` tool.
 
+**Branch / Issue / PR Standard**:
+- If the test plan is part of requirements/design/planning, save it on the active `docs/<issue>-<slug>` branch and reference the Issue with `Refs #<issue>`.
+- If the test plan is part of implementation validation, work on the active `feature/*` or `fix/*` branch owned by Developer.
+- Do not create a separate branch unless explicitly instructed; align with the branch already used for the requirement or implementation.
+- Test planning does not close Issues. Closing belongs to the implementation PR that fully satisfies acceptance criteria.
+
 **Quality Standards**:
 - Write steps that are specific enough for any tester to follow
 - Include negative testing scenarios

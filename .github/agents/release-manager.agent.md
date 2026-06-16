@@ -41,11 +41,12 @@ anything reaches `main`.
 
 1. Ask the user (or infer from context) what is included in this release.
 2. Read current `VERSION` to know the baseline.
-3. Apply semantic versioning rules:
+3. Identify the GitHub Issue(s) included in the release from merged PRs, release notes, or user-provided scope.
+4. Apply semantic versioning rules:
    - **MAJOR** — breaking API or data-model change.
    - **MINOR** — new backwards-compatible feature.
    - **PATCH** — bug fix, docs, tooling, or CI-only changes.
-4. Confirm the chosen version with the user before proceeding.
+5. Confirm the chosen version with the user before proceeding.
 
 ### Phase 2 — Create the Release Branch
 
@@ -129,6 +130,9 @@ gh pr create \
   --body "## Release v<version>
 ### 变更内容
 <summary>
+### 关联 Issue
+- Refs #<issue-id>
+
 ### 验收清单
 - [ ] VERSION 已更新为 <version>
 - [ ] CHANGELOG.md 已包含本版本条目
@@ -176,6 +180,8 @@ Next    : Review & merge the PR, then run `git tag v<version> && git push origin
 
 - Never `git push` directly to `main`.
 - Never create a tag before the PR is merged.
+- Release/hotfix PRs should reference included Issues with `Refs #<issue>`; they normally should not use `Closes` / `Fixes` because implementation PRs own acceptance closure.
+- If the release includes multiple Issues, list all of them in the PR body and release notes.
 - If a script referenced in `git rm` no longer exists, skip that step — don't fail the release for a missing script.
 - If the user says "hotfix", use `hotfix/<version>` as the branch name; the rest of the workflow is identical.
 - Always confirm the version number with the user before creating the branch.
