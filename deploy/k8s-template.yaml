@@ -3,15 +3,6 @@
 # This template supports configurable parameters for automated deployment
 
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: ${NAMESPACE}
-  labels:
-    app: health-platform
-
----
-
-apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: namespace-quota

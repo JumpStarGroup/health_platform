@@ -50,6 +50,7 @@ def test_deploy_identity_metadata_uses_environment_variables():
 def test_k8s_template_uses_secret_for_backend_sensitive_values():
     template = (REPO_ROOT / "deploy" / "k8s-template.yaml").read_text()
 
+    assert "kind: Namespace" not in template
     assert "kind: Secret" in template
     assert "name: backend-secrets" in template
     assert 'DATABASE_URL: "${DATABASE_URL}"' in template
