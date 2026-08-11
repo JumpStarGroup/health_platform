@@ -214,7 +214,8 @@ jobs:
           source "$ENV_FILE"
           set +a
 
-          export REGISTRY_URL="ghcr.io/${{ github.repository_owner }}"
+          REGISTRY_OWNER="$(printf '%s' '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          export REGISTRY_URL="ghcr.io/${REGISTRY_OWNER}"
           export IMAGE_TAG="$DEPLOY_IMAGE_TAG"
 
           if [ -n "$CORS_ORIGINS" ]; then
