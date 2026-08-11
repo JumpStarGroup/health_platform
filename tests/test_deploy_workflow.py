@@ -26,6 +26,20 @@ def test_ci_cd_workflows_enforce_trunk_release_flow():
     assert "git merge-base --is-ancestor" in production
 
 
+def test_development_workflow_is_manual_and_isolated():
+    workflow = (REPO_ROOT / ".github" / "workflows" / "deploy-development.yml").read_text()
+    triggers = workflow.split("permissions:", 1)[0]
+
+    assert "workflow_dispatch:" in workflow
+    assert "\n  push:" not in triggers
+    assert "environment: development" in workflow
+    assert "source deploy/config/development.env" in workflow
+    assert 'export DATABASE_URL="sqlite:///instance/health_platform.db"' in workflow
+    assert 'export BACKEND_REPLICAS=1' in workflow
+    assert "secrets.GHCR_READ_TOKEN" in workflow
+    assert "secrets.DATABASE_URL" not in workflow
+
+
 def test_staging_deploys_commit_immutable_image_tag():
     workflow = (REPO_ROOT / ".github" / "workflows" / "deploy-staging.yml").read_text()
 
