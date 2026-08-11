@@ -1,0 +1,175 @@
+# Manually build and deploy main to the development Kubernetes environment.
+
+name: Deploy Development
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip image build and deploy an existing image tag'
+        required: false
+        default: false
+        type: boolean
+      image_tag:
+        description: 'Existing image tag to deploy when skip_build is true'
+        required: false
+        default: 'development'
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-development
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    if: inputs.skip_build != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract backend image metadata
+        id: meta_backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/health-platform-backend
+          flavor: latest=false
+          tags: |
+            type=sha,prefix=sha-,format=long
+            type=raw,value=development
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.backend
+          push: true
+          tags: ${{ steps.meta_backend.outputs.tags }}
+          labels: ${{ steps.meta_backend.outputs.labels }}
+
+      - name: Extract frontend image metadata
+        id: meta_frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/health-platform-frontend
+          flavor: latest=false
+          tags: |
+            type=sha,prefix=sha-,format=long
+            type=raw,value=development
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile.frontend.nonroot
+          push: true
+          tags: ${{ steps.meta_frontend.outputs.tags }}
+          labels: ${{ steps.meta_frontend.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    if: always() && (needs.build-and-push.result == 'success' || (inputs.skip_build == true && needs.build-and-push.result == 'skipped'))
+    runs-on: ubuntu-latest
+    environment: development
+    env:
+      DEPLOY_IMAGE_TAG: ${{ inputs.skip_build == true && inputs.image_tag || format('sha-{0}', github.sha) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG }}
+          kubeconfig-encoding: plaintext
+
+      - name: Install envsubst
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext-base
+
+      - name: Create imagePullSecret for GHCR
+        env:
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        run: |
+          set -a
+          source deploy/config/development.env
+          set +a
+
+          : "${NAMESPACE:?NAMESPACE must be set in development.env}"
+          : "${GHCR_USERNAME:?GHCR_USERNAME development variable must be set}"
+          : "${GHCR_TOKEN:?GHCR_READ_TOKEN repository secret must be set}"
+
+          kubectl delete secret ghcr-secret --namespace="$NAMESPACE" --ignore-not-found=true
+          kubectl create secret docker-registry ghcr-secret \
+            --namespace="$NAMESPACE" \
+            --docker-server=ghcr.io \
+            --docker-username="$GHCR_USERNAME" \
+            --docker-password="$GHCR_TOKEN" \
+            --docker-email="${GHCR_USERNAME}@users.noreply.github.com"
+
+      - name: Deploy to Kubernetes
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
+        run: |
+          export ENVIRONMENT=development
+          ENV_FILE=deploy/config/${ENVIRONMENT}.env
+          sed -i 's/\r$//' "$ENV_FILE"
+          set -a
+          source "$ENV_FILE"
+          set +a
+
+          export REGISTRY_URL="ghcr.io/${{ github.repository_owner }}"
+          export IMAGE_TAG="$DEPLOY_IMAGE_TAG"
+          export DATABASE_URL="sqlite:///instance/health_platform.db"
+          export BACKEND_REPLICAS=1
+          export CORS_ORIGINS="${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://frontend-svc.${NAMESPACE}.svc.cluster.local:80}"
+          : "${JWT_SECRET:?JWT_SECRET development secret must be set}"
+
+          VARS='$NAMESPACE $REGISTRY_URL $IMAGE_TAG $BACKEND_REPLICAS $FRONTEND_REPLICAS $BACKEND_MEMORY_REQUEST $BACKEND_CPU_REQUEST $BACKEND_MEMORY_LIMIT $BACKEND_CPU_LIMIT $FRONTEND_MEMORY_REQUEST $FRONTEND_CPU_REQUEST $FRONTEND_MEMORY_LIMIT $FRONTEND_CPU_LIMIT $FLASK_ENV $CORS_ORIGINS $DATABASE_URL $JWT_SECRET $SERVICE_TYPE'
+          envsubst "$VARS" < deploy/k8s-template.yaml > deploy/k8s-${ENVIRONMENT}-generated.yaml
+          kubectl apply -f deploy/k8s-${ENVIRONMENT}-generated.yaml
+
+          kubectl rollout status deployment/backend -n "$NAMESPACE" --timeout=300s
+          kubectl rollout status deployment/frontend -n "$NAMESPACE" --timeout=300s
+          kubectl get pods,svc -n "$NAMESPACE"
+
+      - name: Export development URL
+        run: |
+          set -a
+          source deploy/config/development.env
+          set +a
+
+          address=""
+          for attempt in $(seq 1 60); do
+            ip=$(kubectl get svc frontend-svc -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+            hostname=$(kubectl get svc frontend-svc -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+            address="${ip:-$hostname}"
+            if [ -n "$address" ]; then
+              break
+            fi
+            sleep 5
+          done
+
+          if [ -z "$address" ]; then
+            echo "Development frontend external address is pending."
+            exit 1
+          fi
+          echo "Development URL: http://${address}/" >> "$GITHUB_STEP_SUMMARY"

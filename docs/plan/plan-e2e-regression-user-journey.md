@@ -3,7 +3,7 @@
 ## References
 - Requirement: docs/requirements/req-e2e-regression-user-journey.md
 - Design: docs/design/design-e2e-regression-user-journey.md
-- Tracking Issue: https://github.com/workshop-copilot/health_platform/issues/3
+- Tracking Issue: https://github.com/JumpStarGroup/health_platform/issues/1
 
 ## Phase 0: Baseline & Conventions (Prep)
 - [ ] **Task 0.1**: Confirm existing Playwright setup works locally.

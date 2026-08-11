@@ -233,7 +233,7 @@ git push origin main --tags
    - 先补齐文档与版本文件，再重新推送 PR。
    - 如发现版本号不一致，先修正分支名、`VERSION`、`CHANGELOG.md` 与 release notes，再重跑 CI。
 
-> 说明：若团队规模扩大或需要多环境长期并行，可参考 `docs/BRANCH-ENVIRONMENT-STRATEGY.md` 中的 GitFlow 扩展方案；默认情况下以此轻量主干流程为准。
+> 当前执行规则见 `docs/BRANCHING-AND-DEPLOYMENT.md`。若团队规模扩大或需要多环境长期并行，可参考 `docs/BRANCH-ENVIRONMENT-STRATEGY.md` 中的历史 GitFlow 扩展方案。
 
 ## DevOps & CI/CD 规范
 

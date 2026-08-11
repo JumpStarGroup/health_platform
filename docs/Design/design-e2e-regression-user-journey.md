@@ -2,7 +2,7 @@
 
 ## 1. Overview
 - Reference: [docs/requirements/req-e2e-regression-user-journey.md](../requirements/req-e2e-regression-user-journey.md)
-- Tracking Issue: https://github.com/workshop-copilot/health_platform/issues/3
+- Tracking Issue: https://github.com/JumpStarGroup/health_platform/issues/1
 - Goal: Provide a stable Playwright-based UI E2E regression that validates the core user journey end-to-end, with Chinese UI as the primary locale and a manual trigger workflow.
 
 ## 2. Architecture Changes

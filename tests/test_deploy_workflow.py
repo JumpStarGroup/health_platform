@@ -10,11 +10,64 @@ def test_staging_workflow_has_safe_runtime_fallbacks():
     assert 'export DATABASE_URL="sqlite:///instance/health_platform.db"' in workflow
     assert 'export BACKEND_REPLICAS=1' in workflow
     assert 'export JWT_SECRET="$(openssl rand -hex 32)"' in workflow
+    assert "secrets.DATABASE_URL" not in workflow
+
+
+def test_ci_cd_workflows_enforce_trunk_release_flow():
+    pr_validation = (REPO_ROOT / ".github" / "workflows" / "pr-validation.yml").read_text()
+    staging = (REPO_ROOT / ".github" / "workflows" / "deploy-staging.yml").read_text()
+    production = (REPO_ROOT / ".github" / "workflows" / "release-production.yml").read_text()
+
+    assert "pull_request:\n    branches:\n      - main" in pr_validation
+    assert "push:\n    branches:\n      - main" in staging
+    assert "environment: staging" in staging
+    assert "tags:\n      - 'v*.*.*'" in production
+    assert "environment: production" in production
+    assert "git merge-base --is-ancestor" in production
+
+
+def test_development_workflow_is_manual_and_isolated():
+    workflow = (REPO_ROOT / ".github" / "workflows" / "deploy-development.yml").read_text()
+    triggers = workflow.split("permissions:", 1)[0]
+
+    assert "workflow_dispatch:" in workflow
+    assert "\n  push:" not in triggers
+    assert "environment: development" in workflow
+    assert "source deploy/config/development.env" in workflow
+    assert 'export DATABASE_URL="sqlite:///instance/health_platform.db"' in workflow
+    assert 'export BACKEND_REPLICAS=1' in workflow
+    assert "secrets.GHCR_READ_TOKEN" in workflow
+    assert "secrets.DATABASE_URL" not in workflow
+
+
+def test_staging_deploys_commit_immutable_image_tag():
+    workflow = (REPO_ROOT / ".github" / "workflows" / "deploy-staging.yml").read_text()
+
+    assert "type=sha,prefix=sha-,format=long" in workflow
+    assert "DEPLOY_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch'" in workflow
+    assert "|| format('sha-{0}', github.sha) }}" in workflow
+
+
+def test_deploy_identity_metadata_uses_environment_variables():
+    for workflow_name in ("deploy-staging.yml", "release-production.yml"):
+        workflow = (REPO_ROOT / ".github" / "workflows" / workflow_name).read_text()
+
+        assert "GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}" in workflow
+        assert "uses: azure/k8s-set-context@v4" in workflow
+        assert "kubeconfig-encoding: plaintext" in workflow
+        assert "secrets.GHCR_USERNAME" not in workflow
+        assert "secrets.KUBE_CONTEXT" not in workflow
+        assert "vars.KUBE_CONTEXT" not in workflow
+        assert "kubectl create namespace" not in workflow
+        assert "github.repository_owner }}" not in workflow.split("GHCR_USERNAME:", 1)[1].splitlines()[0]
 
 
 def test_k8s_template_uses_secret_for_backend_sensitive_values():
     template = (REPO_ROOT / "deploy" / "k8s-template.yaml").read_text()
 
+    assert "kind: Namespace" not in template
+    assert "mountPath: /app/instance" in template
+    assert "emptyDir: {}" in template
     assert "kind: Secret" in template
     assert "name: backend-secrets" in template
     assert 'DATABASE_URL: "${DATABASE_URL}"' in template
