@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.811] - 2026-08-11
+
+### 新增
+- 增加 development、staging 和 production 三套 Kubernetes 部署环境。
+- 增加 Development 手动部署、Staging 自动部署和 Tag 驱动的 Production 发布流程。
+
+### 改进
+- 将项目迁移到 `JumpStarGroup/health_platform`，恢复分支并启用主分支保护。
+- 为各环境配置独立的 namespace-scoped ServiceAccount、RBAC 和 kubeconfig。
+- 使用不可变 commit SHA 镜像部署 development 和 staging，提高审计与回滚能力。
+- 使用 Repository Secret 共享 GHCR 只读凭据，并按 Environment 隔离 Kubernetes 与 JWT 凭据。
+- development 和 staging 使用单副本临时 SQLite，production 强制要求外部持久数据库。
+
+### 安全
+- 禁止部署身份创建 Namespace 或跨环境访问资源。
+- production 仅允许 `vMAJOR.MINOR.PATCH` 标签部署，并要求 Environment 审批。
+
 ## [1.1.615] - 2026-06-15
 
 ### 改进
