@@ -40,10 +40,10 @@ echo %CURRENT_CONTEXT%
 
 echo.
 echo 🔑 KUBE_CONFIG:
-echo Copy the entire output below (including -----BEGIN/END----- lines):
+echo Copy the entire raw YAML output below:
 echo ---
 
-REM Get base64 encoded kubeconfig
+REM Get a single-context raw kubeconfig
 kubectl config view --minify --raw 2>nul
 
 echo ---
@@ -51,18 +51,12 @@ echo ---
 echo.
 echo 💡 Instructions:
 echo 1. Go to GitHub → Repository → Settings → Environments
-echo 2. Select your environment (development/production)
+echo 2. Select your environment (staging/production)
 echo 3. Add the following secrets:
-echo    - KUBE_CONTEXT: %CURRENT_CONTEXT%
-echo    - KUBE_CONFIG: [copy and base64 encode the YAML content above]
-echo    - GHCR_USERNAME: your-github-username
-echo    - GHCR_TOKEN: [your personal access token with packages:write scope]
-
-echo.
-echo 💡 To base64 encode the KUBE_CONFIG on Windows:
-echo    1. Save the YAML output above to a file (e.g., kubeconfig.yaml)
-echo    2. Use: certutil -encode kubeconfig.yaml kubeconfig-base64.txt
-echo    3. Copy content from kubeconfig-base64.txt (remove header/footer lines)
+echo    - KUBE_CONFIG: [copy the raw YAML above without Base64 encoding]
+echo    - GHCR_READ_TOKEN: [token with read:packages only]
+echo 4. Add the following variable:
+echo    - GHCR_USERNAME: GitHub login that owns GHCR_READ_TOKEN
 
 echo.
 echo ✅ Configuration extraction complete!

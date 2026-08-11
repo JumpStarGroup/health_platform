@@ -154,11 +154,11 @@ jobs:
           ref: ${{ needs.validate-release.outputs.release_tag }}
 
       - name: Setup kubectl
-        uses: azure/k8s-set-context@v1
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          context: ${{ secrets.KUBE_CONTEXT }}
+          kubeconfig-encoding: plaintext
 
       - name: Install envsubst
         run: |
@@ -167,7 +167,7 @@ jobs:
 
       - name: Create imagePullSecrets for GHCR
         env:
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
           GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
         run: |
           ENV_FILE=deploy/config/production.env
@@ -182,7 +182,7 @@ jobs:
 
           : "${NAMESPACE:?NAMESPACE must be set in production env file}"
           if [ -z "$GHCR_USERNAME" ] || [ -z "$GHCR_TOKEN" ]; then
-            echo "Missing GHCR pull credentials. Set GHCR_USERNAME and GHCR_READ_TOKEN in the production GitHub Environment Secrets."
+            echo "Missing GHCR pull credentials. Set GHCR_USERNAME as a production variable and GHCR_READ_TOKEN as a production secret."
             exit 1
           fi
 
@@ -198,7 +198,6 @@ jobs:
 
       - name: Deploy to Kubernetes
         env:
-          KUBE_CONTEXT: ${{ secrets.KUBE_CONTEXT }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
@@ -241,10 +240,6 @@ jobs:
           : "${IMAGE_TAG:?IMAGE_TAG must be set}"
           : "${BACKEND_REPLICAS:?BACKEND_REPLICAS must be set in .env file}"
           : "${FRONTEND_REPLICAS:?FRONTEND_REPLICAS must be set in .env file}"
-
-          if [ -n "$KUBE_CONTEXT" ]; then
-            kubectl config use-context "$KUBE_CONTEXT"
-          fi
 
           echo "Deploying production image tag: ${IMAGE_TAG}"
           echo "Production namespace: ${NAMESPACE}"

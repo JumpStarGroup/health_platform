@@ -55,7 +55,7 @@ jobs:
             latest=false
           tags: |
             type=ref,event=branch
-            type=sha
+            type=sha,prefix=sha-,format=long
             type=raw,value=staging
 
       - name: Build and push backend image
@@ -77,7 +77,7 @@ jobs:
             latest=false
           tags: |
             type=ref,event=branch
-            type=sha
+            type=sha,prefix=sha-,format=long
             type=raw,value=staging
 
       - name: Build and push frontend image
@@ -97,17 +97,17 @@ jobs:
     outputs:
       frontend_url: ${{ steps.frontend_url.outputs.url }}
     env:
-      DEPLOY_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_build == true && inputs.image_tag || 'staging' }}
+      DEPLOY_IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_build == true && inputs.image_tag || format('sha-{0}', github.sha) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup kubectl
-        uses: azure/k8s-set-context@v1
+        uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-          context: ${{ secrets.KUBE_CONTEXT }}
+          kubeconfig-encoding: plaintext
 
       - name: Install envsubst
         run: |
@@ -116,7 +116,7 @@ jobs:
 
       - name: Create imagePullSecrets for GHCR
         env:
-          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME || github.repository_owner }}
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
           GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
         run: |
           ENV_FILE=deploy/config/staging.env
@@ -131,7 +131,7 @@ jobs:
 
           : "${NAMESPACE:?NAMESPACE must be set in staging env file}"
           if [ -z "$GHCR_USERNAME" ] || [ -z "$GHCR_TOKEN" ]; then
-            echo "Missing GHCR pull credentials. Set GHCR_USERNAME and GHCR_READ_TOKEN in the staging GitHub Environment Secrets."
+            echo "Missing GHCR pull credentials. Set GHCR_USERNAME as a staging variable and GHCR_READ_TOKEN as a staging secret."
             exit 1
           fi
 
@@ -147,7 +147,6 @@ jobs:
 
       - name: Deploy to Kubernetes
         env:
-          KUBE_CONTEXT: ${{ secrets.KUBE_CONTEXT }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
@@ -191,10 +190,6 @@ jobs:
           : "${IMAGE_TAG:?IMAGE_TAG must be set}"
           : "${BACKEND_REPLICAS:?BACKEND_REPLICAS must be set in .env file}"
           : "${FRONTEND_REPLICAS:?FRONTEND_REPLICAS must be set in .env file}"
-
-          if [ -n "$KUBE_CONTEXT" ]; then
-            kubectl config use-context "$KUBE_CONTEXT"
-          fi
 
           echo "Deploying staging image tag: ${IMAGE_TAG}"
           echo "Staging namespace: ${NAMESPACE}"
