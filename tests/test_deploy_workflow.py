@@ -36,6 +36,8 @@ def test_development_workflow_is_manual_and_isolated():
     assert "source deploy/config/development.env" in workflow
     assert 'export DATABASE_URL="sqlite:///instance/health_platform.db"' in workflow
     assert 'export BACKEND_REPLICAS=1' in workflow
+    assert "tr '[:upper:]' '[:lower:]'" in workflow
+    assert 'export REGISTRY_URL="ghcr.io/${REGISTRY_OWNER}"' in workflow
     assert "secrets.GHCR_READ_TOKEN" in workflow
     assert "secrets.DATABASE_URL" not in workflow
 
@@ -60,6 +62,19 @@ def test_deploy_identity_metadata_uses_environment_variables():
         assert "vars.KUBE_CONTEXT" not in workflow
         assert "kubectl create namespace" not in workflow
         assert "github.repository_owner }}" not in workflow.split("GHCR_USERNAME:", 1)[1].splitlines()[0]
+
+
+def test_deploy_workflows_use_lowercase_ghcr_repository_names():
+    for workflow_name in (
+        "deploy-development.yml",
+        "deploy-staging.yml",
+        "release-production.yml",
+    ):
+        workflow = (REPO_ROOT / ".github" / "workflows" / workflow_name).read_text()
+
+        assert "tr '[:upper:]' '[:lower:]'" in workflow
+        assert 'export REGISTRY_URL="ghcr.io/${REGISTRY_OWNER}"' in workflow
+        assert 'export REGISTRY_URL="ghcr.io/${{ github.repository_owner }}"' not in workflow
 
 
 def test_k8s_template_uses_secret_for_backend_sensitive_values():
