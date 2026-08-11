@@ -862,7 +862,7 @@ gitGraph
 |---|---|---|
 | 贡献指南 | `CONTRIBUTING.md` | 代码规范、提交规范、版本发布 |
 | 开发环境 | `docs/DEVELOPMENT.md` | 环境搭建、启动命令 |
-| 分支策略 | `docs/BRANCH-ENVIRONMENT-STRATEGY.md` | 分支与环境映射 |
+| 分支策略 | `docs/BRANCHING-AND-DEPLOYMENT.md` | 当前分支、环境与自动部署规则 |
 | 部署指南 | `deploy/README.md` | K8s 部署操作 |
 | 环境配置 | `docs/GITHUB-ENVIRONMENT-SETUP.md` | GitHub Secrets/Variables |
 | 架构设计 | `docs/architecture/architecture.md` | 系统架构与分层 |
