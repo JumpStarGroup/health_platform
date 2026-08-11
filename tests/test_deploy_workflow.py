@@ -43,6 +43,7 @@ def test_deploy_identity_metadata_uses_environment_variables():
         assert "secrets.GHCR_USERNAME" not in workflow
         assert "secrets.KUBE_CONTEXT" not in workflow
         assert "vars.KUBE_CONTEXT" not in workflow
+        assert "kubectl create namespace" not in workflow
         assert "github.repository_owner }}" not in workflow.split("GHCR_USERNAME:", 1)[1].splitlines()[0]
 
 

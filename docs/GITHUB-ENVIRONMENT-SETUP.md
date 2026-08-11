@@ -47,6 +47,8 @@
 
 `KUBE_CONTEXT` 不需要单独配置。项目使用 `kubectl config view --minify --raw` 生成仅包含当前上下文的 kubeconfig，工作流直接使用其中的 `current-context`。
 
+目标 Namespace 必须由集群管理员预先创建。部署身份只需要目标 Namespace 内对 Deployment、Service、ConfigMap、Secret 和 Pod 日志等部署资源的必要权限；工作流不会创建或修改 Namespace，从而避免使用集群管理员 kubeconfig。
+
 ### GitHub Container Registry 凭据
 
 构建阶段使用工作流自动生成的 `GITHUB_TOKEN` 推送镜像，不需要人工配置写权限。Kubernetes 在工作流结束后仍需拉取私有镜像，不能依赖短期 `GITHUB_TOKEN`，因此需要长期只读凭据。

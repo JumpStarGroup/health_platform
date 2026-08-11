@@ -186,7 +186,6 @@ jobs:
             exit 1
           fi
 
-          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           kubectl delete secret ghcr-secret --namespace="$NAMESPACE" --ignore-not-found=true
           kubectl create secret docker-registry ghcr-secret \
             --namespace="$NAMESPACE" \
@@ -255,7 +254,6 @@ jobs:
             exit 1
           fi
 
-          kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f deploy/k8s-${ENVIRONMENT}-generated.yaml
 
           set +e
