@@ -131,7 +131,7 @@ jobs:
 
           : "${NAMESPACE:?NAMESPACE must be set in staging env file}"
           if [ -z "$GHCR_USERNAME" ] || [ -z "$GHCR_TOKEN" ]; then
-            echo "Missing GHCR pull credentials. Set GHCR_USERNAME as a staging variable and GHCR_READ_TOKEN as a staging secret."
+            echo "Missing GHCR pull credentials. Set GHCR_USERNAME as a staging variable and GHCR_READ_TOKEN as a repository secret."
             exit 1
           fi
 
@@ -146,7 +146,6 @@ jobs:
 
       - name: Deploy to Kubernetes
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
         run: |
@@ -165,6 +164,8 @@ jobs:
 
           export REGISTRY_URL="ghcr.io/${{ github.repository_owner }}"
           export IMAGE_TAG="$DEPLOY_IMAGE_TAG"
+          export DATABASE_URL="sqlite:///instance/health_platform.db"
+          export BACKEND_REPLICAS=1
 
           if [ -n "$CORS_ORIGINS" ]; then
             export CORS_ORIGINS="$CORS_ORIGINS"
@@ -172,11 +173,7 @@ jobs:
             export CORS_ORIGINS="http://localhost:3000,http://127.0.0.1:3000,http://frontend-svc.${NAMESPACE}.svc.cluster.local:80"
           fi
 
-          if [ -z "$DATABASE_URL" ]; then
-            export DATABASE_URL="sqlite:///instance/health_platform.db"
-            export BACKEND_REPLICAS=1
-            echo "DATABASE_URL not set in staging secrets; falling back to SQLite and forcing a single backend replica."
-          fi
+          echo "Using ephemeral SQLite in the staging backend Pod and forcing a single replica."
           if [ -z "$JWT_SECRET" ]; then
             export JWT_SECRET="$(openssl rand -hex 32)"
             echo "JWT_SECRET not set in staging secrets; generated an ephemeral secret for this deployment."

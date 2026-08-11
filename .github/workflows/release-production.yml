@@ -182,7 +182,7 @@ jobs:
 
           : "${NAMESPACE:?NAMESPACE must be set in production env file}"
           if [ -z "$GHCR_USERNAME" ] || [ -z "$GHCR_TOKEN" ]; then
-            echo "Missing GHCR pull credentials. Set GHCR_USERNAME as a production variable and GHCR_READ_TOKEN as a production secret."
+            echo "Missing GHCR pull credentials. Set GHCR_USERNAME as a production variable and GHCR_READ_TOKEN as a repository secret."
             exit 1
           fi
 

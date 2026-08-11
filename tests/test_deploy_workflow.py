@@ -10,6 +10,7 @@ def test_staging_workflow_has_safe_runtime_fallbacks():
     assert 'export DATABASE_URL="sqlite:///instance/health_platform.db"' in workflow
     assert 'export BACKEND_REPLICAS=1' in workflow
     assert 'export JWT_SECRET="$(openssl rand -hex 32)"' in workflow
+    assert "secrets.DATABASE_URL" not in workflow
 
 
 def test_ci_cd_workflows_enforce_trunk_release_flow():
@@ -51,6 +52,8 @@ def test_k8s_template_uses_secret_for_backend_sensitive_values():
     template = (REPO_ROOT / "deploy" / "k8s-template.yaml").read_text()
 
     assert "kind: Namespace" not in template
+    assert "mountPath: /app/instance" in template
+    assert "emptyDir: {}" in template
     assert "kind: Secret" in template
     assert "name: backend-secrets" in template
     assert 'DATABASE_URL: "${DATABASE_URL}"' in template

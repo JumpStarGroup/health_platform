@@ -120,6 +120,9 @@ spec:
             capabilities:
               drop:
                 - ALL
+          volumeMounts:
+            - name: instance-data
+              mountPath: /app/instance
           env:
             - name: FLASK_ENV
               valueFrom:
@@ -160,6 +163,9 @@ spec:
               port: 5000
             initialDelaySeconds: 5
             periodSeconds: 5
+      volumes:
+        - name: instance-data
+          emptyDir: {}
 
 ---
 

@@ -39,9 +39,9 @@
 | 名称 | 类型 | Staging | 用途 |
 |---|---|---|---|
 | `KUBE_CONFIG` | Secret | 必需 | GitHub Actions 访问目标 Kubernetes 集群的原始 kubeconfig YAML |
-| `GHCR_READ_TOKEN` | Secret | 必需 | Kubernetes 长期拉取私有 GHCR 镜像的只读凭据 |
+| `GHCR_READ_TOKEN` | Repository Secret | 必需 | 三个环境共享，供 Kubernetes 长期拉取私有 GHCR 镜像 |
 | `GHCR_USERNAME` | Variable | 必需 | `GHCR_READ_TOKEN` 所属的 GitHub 用户名，不是组织名 |
-| `DATABASE_URL` | Secret | 建议 | 后端数据库连接；缺失时 staging 使用非持久单副本 SQLite |
+| `DATABASE_URL` | Environment Secret | 仅 production 必需 | dev/staging 不配置，使用 backend Pod `emptyDir` 中的单副本临时 SQLite |
 | `JWT_SECRET` | Secret | 建议 | JWT 签名密钥；缺失时每次部署自动轮换，已有登录令牌会失效 |
 | `CORS_ORIGINS` | Variable | 按访问方式配置 | 允许访问 API 的浏览器 Origin，多个值使用逗号分隔 |
 
@@ -66,7 +66,7 @@
    - **Expiration**: 建议 90 天
    - **Scopes**: 仅选择 `read:packages`
 4. 如组织启用了 SAML SSO，为 token 授权 `JumpStarGroup`。
-5. 将 token 保存为 Environment Secret `GHCR_READ_TOKEN`。
+5. 将 token 保存为 Repository Secret `GHCR_READ_TOKEN`，三个 Environment 直接共享。
 6. 将 token 所属用户名保存为 Environment Variable `GHCR_USERNAME`。
 
 不要授予 `write:packages` 或 `delete:packages`；镜像构建推送由 Actions 的 `GITHUB_TOKEN` 完成。更稳妥的长期方案是使用专用机器账号创建 token，避免个人离职或权限变化导致集群无法拉取镜像。
@@ -84,8 +84,6 @@ JWT_SECRET=your-super-secure-random-jwt-secret-key-here
 # Kubernetes 配置（原始 YAML，不要再次 Base64 编码）
 KUBE_CONFIG=<output-of-kubectl-config-view-minify-raw>
 
-# GitHub Container Registry 认证
-GHCR_READ_TOKEN=your-personal-access-token-with-read:packages
 ```
 
 Production Environment Variables：
@@ -99,18 +97,15 @@ CORS_ORIGINS=https://your-domain.example
 进入 `staging` 环境，添加以下 Secrets：
 
 ```bash
-# 数据库连接（测试）
-DATABASE_URL=sqlite:///instance/health_platform.db
-
 # JWT 密钥（测试）
 JWT_SECRET=your-staging-jwt-secret-key-here
 
 # Kubernetes 配置（原始 YAML，不要再次 Base64 编码）
 KUBE_CONFIG=<output-of-kubectl-config-view-minify-raw>
 
-# GitHub Container Registry 认证
-GHCR_READ_TOKEN=your-personal-access-token-with-read:packages
 ```
+
+development 和 staging 不配置 `DATABASE_URL`。工作流为 staging 设置 `sqlite:///instance/health_platform.db` 并强制单 backend 副本；`/app/instance` 挂载为 Pod `emptyDir`。这表示数据库运行在 Kubernetes Pod 中，但 Pod 替换、重新调度或 rollout 后数据会清空。
 
 Staging Environment Variables：
 
