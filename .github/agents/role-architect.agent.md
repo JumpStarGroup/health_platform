@@ -6,7 +6,7 @@ tools: ['edit', 'search', 'vscode/getProjectSetupInfo', 'vscode/installExtension
 handoffs:
   - label: Proceed to Implementation Planning
     agent: Tech_Lead_Planner
-        prompt: "Design is ready in `/docs/Design/design-[slug].md`, committed on the docs branch, and synced to Issue #[ID]. Please continue on the same branch and break this down into actionable tasks."
+    prompt: "Design is ready in `/docs/Design/design-[slug].md`, committed on the docs branch, and synced to Issue #[ID]. Please continue on the same branch and break this down into actionable tasks."
 ---
 
 ## Persona

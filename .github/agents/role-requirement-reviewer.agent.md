@@ -2,7 +2,7 @@
 name: Requirement_Reviewer
 description: Expert reviewer for requirement clarity, completeness, scope, risks, and testable acceptance criteria.
 argument-hint: Provide the issue link, requirement doc path, or requirement text to review.
-tools: [read, search, web, todo]
+tools: [read, search, web, todo, 'github/*']
 handoffs:
   - label: Proceed to Architecture Design
     agent: System_Architect
@@ -45,6 +45,7 @@ handoffs:
    - Separate required clarifications from optional improvements.
 5. **Render a final decision**:
    - `approve`, `approve_with_conditions`, or `request_changes`.
+   - Post the complete decision, findings, pass conditions, and next owner to the GitHub Issue so later roles can verify the result.
    - For simple work, hand off an approved requirement to Development_Readiness_Reviewer.
    - For complex work, hand off an approved requirement to System_Architect; do not wait for or review design and plan artifacts.
 
@@ -59,6 +60,7 @@ handoffs:
 - For complex requirements, review the docs branch and/or the merged requirement doc, not the raw implementation branch.
 - Docs PRs use `Refs #[ID]` and never close the Issue.
 - Only once the requirement is approved should complex work move to architecture and planning or simple work move to the readiness gate.
+- The GitHub Issue comment is the persistent approval record; do not rely on local session state.
 
 ## Required checklists
 - Does the problem statement describe the user need and business value clearly?

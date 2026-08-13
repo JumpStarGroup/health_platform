@@ -64,7 +64,7 @@ docs: update README with version management
    echo "1.1.0" > VERSION
    ```
 
-2. **更新变更日志**
+2. **更新变更日志和发布说明**
    ```markdown
    # CHANGELOG.md
    ## [1.1.0] - 2025-12-01
@@ -75,13 +75,19 @@ docs: update README with version management
    ### 修复
    - Bug 描述
    ```
+   同时创建 `docs/releases/RELEASE_NOTES_v1.1.0.md`，标题必须为 `# Release Notes - v1.1.0`。
 
-3. **提交并打标签**
+3. **在发布分支提交，合并 Release PR 后打标签**
    ```bash
-   git add VERSION CHANGELOG.md
+   git checkout -b release/1.1.0
+   git add VERSION CHANGELOG.md docs/releases/RELEASE_NOTES_v1.1.0.md
    git commit -m "chore: release v1.1.0"
-   git tag v1.1.0
-   git push origin main --tags
+   git push -u origin release/1.1.0
+   # Release PR 合并后，在最新 main 上执行：
+   git checkout main
+   git pull origin main
+   git tag -a v1.1.0 -m "Release v1.1.0"
+   git push origin v1.1.0
    ```
 
 ### 版本号读取机制
@@ -104,7 +110,7 @@ VERSION 文件
 3. 确保测试通过：`pytest tests/ -v`
 4. 提交 PR，填写描述
 5. 在 GitHub.com 请求至少一名非提交者进行人工代码审查
-6. 等待 required checks 通过、至少一个人工 approval，并解决所有阻塞性 Review conversation
+6. 等待 required checks 通过、至少一个人工 approval，并解决所有 Review conversation
 7. 可选请求 GitHub Copilot Code Review；其建议不替代人工 approval
 8. 合并后删除分支
 
@@ -161,16 +167,16 @@ git worktree add ../health-platform-features feature/new-health-import
 1. 功能开发分支和修复分支先通过 PR 合并到 `main`。
 2. 发布前先确定本次版本号，例如 `1.1.1`；分支名、`VERSION` 和最终 Tag 应保持一致。
 3. 从最新 `main` 拉出 `release/<version>` 分支，例如 `release/1.1.1`。
-4. 在 `release/<version>` 分支上更新 `VERSION` 和 `CHANGELOG.md`。
+4. 在 `release/<version>` 分支上更新 `VERSION`、`CHANGELOG.md` 和 `docs/releases/RELEASE_NOTES_v<version>.md`。
 5. 通过 PR 将 `release/<version>` 合并回 `main`。
 6. 在 `main` 上创建版本 Tag，例如 `v1.1.1`。
-7. 推送 `main` 和 tags，触发正式发布。
+7. 推送版本 Tag，触发正式发布。
 
 Tag 规则：
 - Tag 格式统一为 `vMAJOR.MINOR.PATCH`，例如 `v1.1.1`。
 - Tag 版本号必须与 `VERSION` 文件内容一致，只是前面多一个 `v` 前缀。
 - Tag 应创建在 `main` 上的发布合并提交之后，而不是创建在功能分支上。
-- 建议使用 annotated tag，便于审计和回溯。
+- 必须使用 annotated tag，便于审计和回溯。
 
 示例：
 ```bash
@@ -186,8 +192,8 @@ git commit -m "chore: release v1.1.0"
 # 合并后在 main 上打 tag
 git checkout main
 git pull origin main
-git tag v1.1.0
-git push origin main --tags
+git tag -a v1.1.0 -m "Release v1.1.0"
+git push origin v1.1.0
 ```
 
 说明：

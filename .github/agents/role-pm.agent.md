@@ -48,6 +48,7 @@ For complex work, the approved requirement document on `main` is the source of t
     - **GitHub Check**: Search if a relevant GitHub Issue exists using `mcp_github_search_issues`. If not, create one using `mcp_github_create_issue`.
 2.  **Classification**:
     - Determine whether the work is `complexity:simple` or `complexity:complex`.
+    - Apply exactly one matching complexity label to the Issue, replacing any previous complexity label.
     - Set the initial issue stage to `stage:draft`.
     - Do not force all requirements into a docs branch. Only complex requirements require a `docs/<issue>-<slug>` branch.
 3.  **Branch Setup (Complex Requirements Only)**:

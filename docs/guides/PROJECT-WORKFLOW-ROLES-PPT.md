@@ -213,7 +213,7 @@ flowchart LR
 **目标：** 让新人知道开发阶段的标准动作。
 
 **页面内容：**
-- 读取 plan
+- 简单需求读取批准后的 Issue；复杂需求读取 requirement/design/plan
 - 写测试，再写代码
 - 本地验证
 - 三终端模型：
@@ -223,7 +223,7 @@ flowchart LR
 - 提交代码
 - 创建 PR 到 `main`
 - 在 GitHub.com 请求至少一名非提交者人工 Review
-- 等待 required checks 和人工 approval，并解决阻塞性 Review conversation
+- 等待 required checks 和人工 approval，并解决所有 Review conversation
 - 合并后清理分支
 
 **关键规范：**
@@ -263,7 +263,7 @@ flowchart LR
 - UI 回归：Playwright E2E
 - PR 校验：后端测试 + 前端 build
 - GitHub.com 人工门禁：至少一名非提交者 approval
-- 所有阻塞性 Review conversation 必须解决
+- 所有 Review conversation 必须解决
 - 发布校验：版本文件、变更日志、发布说明
 - 生产发布后自动回归
 

@@ -129,19 +129,35 @@ agent: agent
 > 当多个功能合入 `main` 且需要发布新版本时，遵循 `CONTRIBUTING.md` 中的语义化版本与发布流程。
 
 1. **确定版本号**：`MAJOR.MINOR.PATCH`
-2. **更新 `VERSION` 与 `CHANGELOG.md`**：
+2. **创建发布分支并更新发布文件**：
+   - 从最新 `main` 创建 `<release-type>/<version>`，其中 `<release-type>` 是常规发布的 `release` 或紧急修复的 `hotfix`。
    - `VERSION`：写入新的版本号，例如 `1.2.0`；
    - `CHANGELOG.md`：新增版本条目，列出本次发布的新增 / 修复项。
-3. **提交并打 Tag**：
+   - 创建 `docs/releases/RELEASE_NOTES_v<version>.md`。
+3. **提交并创建 Release PR**：
 
    ```bash
-   git add VERSION CHANGELOG.md
+   git checkout main
+   git pull origin main
+   git checkout -b <release-type>/<version>
+   git add VERSION CHANGELOG.md docs/releases/RELEASE_NOTES_v<version>.md
    git commit -m "chore: release vX.Y.Z"
-   git tag vX.Y.Z
-   git push origin main --tags
+   git push -u origin <release-type>/<version>
+   gh pr create --base main --head <release-type>/<version>
    ```
 
-4. **CI/CD 根据 Tag 构建并部署到生产环境**。
+   等待 `backend-tests`、`frontend-build`、`release-pr-guard`、至少一名非提交者人工 approval 和所有 Review conversation 解决后，合并 Release PR。
+
+4. **合并后在最新 `main` 上打 Tag**：
+
+   ```bash
+   git checkout main
+   git pull origin main
+   git tag -a vX.Y.Z -m "Release vX.Y.Z"
+   git push origin vX.Y.Z
+   ```
+
+5. **CI/CD 根据 Tag 构建并部署到生产环境**。
 
 ## 四、Agent 在本 Prompt 下的行为要求
 

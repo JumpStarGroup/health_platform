@@ -42,13 +42,13 @@ flowchart LR
 | Require a pull request before merging | 启用 |
 | Required approvals | 至少 1 |
 | Dismiss stale approvals | 启用 |
-| Require status checks | `backend-tests`、`frontend-build` |
+| Require status checks | `backend-tests`、`frontend-build`、`release-pr-guard` |
 | Require branches to be up to date | 启用 |
 | Require conversation resolution | 启用 |
 | Block force pushes and deletions | 启用 |
 | Include administrators / no bypass | 必须启用 |
 
-`release-pr-guard` 只在 `release/*` 或 `hotfix/*` PR 上运行，因此不应配置为所有 PR 的全局 required check；发布类 PR 必须等待该检查成功。
+`release-pr-guard` Job 在所有目标为 `main` 的 PR 上运行并配置为 required check。其脚本对普通 feature/fix PR 返回成功并跳过发布校验，只对 `release/*` 或 `hotfix/*` PR 执行 VERSION、CHANGELOG 和 release notes 校验。
 
 ## 自动化部署规则
 
@@ -76,7 +76,7 @@ flowchart LR
 - 工作流：`.github/workflows/release-production.yml`
 - 触发：推送 `vMAJOR.MINOR.PATCH` 标签，或手动输入同格式的已有标签。
 - 前置校验：标签提交必须可从 `origin/main` 到达；Tag、`VERSION`、`CHANGELOG.md` 和 release notes 必须一致。
-- 环境：GitHub `production` Environment，必须配置审批人和禁止自审。
+- 环境：GitHub `production` Environment，必须配置审批人、禁止自审，并禁止管理员绕过。
 - 镜像：使用版本标签构建，Kubernetes 部署同一版本标签。
 - 验证：等待 rollout 完成，再执行生产 Playwright 回归并保存测试产物。
 - 并发：生产发布不自动取消，避免部署过程被后续运行中断。

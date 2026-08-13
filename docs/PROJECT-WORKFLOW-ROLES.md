@@ -401,27 +401,29 @@ flowchart TD
 
 ## 7. 阶段五：功能开发（Developer 完整流程）
 
-Developer 按实施计划进行编码、测试和自查。
+Developer 按已批准的权威需求来源进行编码、测试和自查：简单需求读取 Issue，复杂需求读取 requirement/design/plan。
 
 ### 7.1 完整开发流程图
 
 ```mermaid
 flowchart TD
-    A[读取实施计划] --> B[读取需求和设计]
-    B --> C[确认当前分支状态]
-    C --> D[同步主干并创建功能分支]
-    D --> E[后端 Manager 层实现业务逻辑]
-    E --> F[Service 层暴露 API]
-    F --> G[前端页面/组件/API 集成]
-    G --> H[补充 Pytest 单元测试]
-    H --> I{涉及 UI 行为?}
-    I -- 是 --> J[补充 Playwright E2E]
-    I -- 否 --> K[本地三终端联调验证]
-    J --> K
-    K --> L[按 Conventional Commits 提交]
-    L --> M[推送分支并创建 PR]
-    M --> N[等待 CI + Review]
-    N --> O[合并后清理分支]
+    A{complexity} --> B[simple: 读取已批准 Issue]
+    A --> C[complex: 读取 requirement/design/plan]
+    B --> D[确认当前分支状态]
+    C --> D
+    D --> E[同步主干并创建功能分支]
+    E --> F[后端 Manager 层实现业务逻辑]
+    F --> G[Service 层暴露 API]
+    G --> H[前端页面/组件/API 集成]
+    H --> I[补充 Pytest 单元测试]
+    I --> J{涉及 UI 行为?}
+    J -- 是 --> K[补充 Playwright E2E]
+    J -- 否 --> L[本地三终端联调验证]
+    K --> L
+    L --> M[按 Conventional Commits 提交]
+    M --> N[推送分支并创建 PR]
+    N --> O[等待 CI + Review]
+    O --> P[合并后清理分支]
 ```
 
 ### 7.2 分支创建
@@ -565,7 +567,7 @@ flowchart TD
 - GitHub Copilot Code Review 可以按需请求，但只能作为补充建议；
 - `backend-tests` 和 `frontend-build` 必须通过；
 - `release/*` 和 `hotfix/*` PR 还必须通过 `release-pr-guard`；
-- 新提交应使旧 approval 失效，阻塞性 Review conversation 必须解决；
+- 新提交应使旧 approval 失效，所有 Review conversation 必须解决；
 - PR 作者或自动化不得绕过 Ruleset 自行合并。
 
 **参考路径：** `.github/workflows/pr-validation.yml`、`scripts/check_release_pr.py`、`docs/BRANCHING-AND-DEPLOYMENT.md`
@@ -789,7 +791,7 @@ gitGraph
 ### Developer 开始前
 
 - [ ] 已从最新 main 创建 feature/fix 分支
-- [ ] 已读取实施计划并理解任务拆分
+- [ ] 简单需求已读取并理解批准后的 Issue；复杂需求已读取 requirement/design/plan
 - [ ] Terminal 1/2/3 已准备就绪
 
 ### PR 合并前
@@ -801,7 +803,7 @@ gitGraph
 - [ ] 提交信息遵循 Conventional Commits
 - [ ] PR 描述包含背景、变更点、测试证据
 - [ ] PR 已关联源 Issue，且 `Refs` / `Closes` / `Fixes` 语义正确
-- [ ] GitHub.com 至少一名非提交者已 approval，且无未解决的阻塞性 Review conversation
+- [ ] GitHub.com 至少一名非提交者已 approval，且所有 Review conversation 已解决
 - [ ] release/hotfix PR 已通过 release guard
 
 ### 上线前

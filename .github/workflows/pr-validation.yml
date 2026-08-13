@@ -58,7 +58,6 @@ jobs:
           CI: 'false'
 
   release-pr-guard:
-    if: startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'hotfix/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
