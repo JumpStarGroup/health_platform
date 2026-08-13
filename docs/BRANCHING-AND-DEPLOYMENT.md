@@ -33,6 +33,8 @@ flowchart LR
 5. 合并后删除短期分支；优先使用 squash merge 保持主干历史清晰。
 6. `main` 合并成功会自动构建镜像，并将该提交部署到 staging。
 
+代码审查发生在 GitHub.com，是平台流程而不是本地自定义 Agent。PR 作者负责请求至少一名非提交者进行人工 Review；可以额外请求 GitHub Copilot Code Review，但其建议不能替代 required human approval。
+
 推荐的 `main` GitHub Ruleset 或 Branch Protection：
 
 | 设置 | 要求 |
@@ -44,7 +46,7 @@ flowchart LR
 | Require branches to be up to date | 启用 |
 | Require conversation resolution | 启用 |
 | Block force pushes and deletions | 启用 |
-| Include administrators / no bypass | 建议启用 |
+| Include administrators / no bypass | 必须启用 |
 
 `release-pr-guard` 只在 `release/*` 或 `hotfix/*` PR 上运行，因此不应配置为所有 PR 的全局 required check；发布类 PR 必须等待该检查成功。
 

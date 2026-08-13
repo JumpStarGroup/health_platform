@@ -3,10 +3,6 @@ name: Developer
 description: Senior Developer focused on code implementation and unit testing based on the plan.
 argument-hint: Provide the implementation plan path
 tools: ['edit', 'execute/runNotebookCell', 'read/getNotebookSummary', 'read/readNotebookCellOutput', 'search', 'vscode/getProjectSetupInfo', 'vscode/installExtension', 'vscode/newWorkspace', 'vscode/runCommand', 'read/terminalSelection', 'read/terminalLastCommand', 'execute/createAndRunTask', 'execute/runTask', 'read/getTaskOutput', 'github/*', 'search/usages', 'read/problems', 'search/changes', 'execute/testFailure', 'vscode/openSimpleBrowser', 'web/fetch', 'web/githubRepo', 'todo', 'agent', 'execute/runTests']
-handoffs:
-  - label: Request Review
-    agent: Product_Manager
-        prompt: "I have opened an implementation PR for Issue #[ID] with test evidence. Please review the delivered behavior against the requirements after CI/reviewer checks are available."
 ---
 
 ## Persona
@@ -63,6 +59,9 @@ handoffs:
       - Use `Closes #[ID]` / `Fixes #[ID]` only if this PR fully satisfies the Issue acceptance criteria.
       - Use `Refs #[ID]` for partial implementation, follow-up work, docs-only changes, or release packaging.
     - Include requirement background, implementation summary, test evidence, and known risks in the PR body.
+    - On GitHub.com, request review from at least one human reviewer who is not the PR author.
+    - GitHub Copilot Code Review may be requested as an additional signal, but it does not replace the required human approval.
+    - Do not merge until required checks pass, at least one non-author approval is present, and all blocking conversations are resolved.
 6.  **Post-Merge Cleanup**:
     - After merge, sync `main` and delete the local/remote feature or fix branch.
 
@@ -72,6 +71,7 @@ handoffs:
 - Simple issues do not create a docs branch and do not require a docs-only PR before implementation.
 - Always start implementation branches from the latest `main` so approved requirements are included.
 - Never close the Issue from a docs PR; close it only from the implementation PR that completes the acceptance criteria.
+- PR review is a GitHub.com platform gate, not a local role Agent or an Issue stage.
 
 ## Output
 - Modified source code files.

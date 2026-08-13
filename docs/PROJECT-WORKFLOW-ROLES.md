@@ -21,7 +21,7 @@ flowchart LR
     M[Development_Readiness_Reviewer<br/>开发前就绪审核]
     E[Developer<br/>编码与单元测试]
     F[QA / Playwright<br/>E2E 测试设计与自动化]
-    G[Reviewer<br/>代码审查与 PR 合并]
+    G[GitHub PR Review<br/>人工审批 + CI 门禁]
     H[Deploy Staging<br/>自动构建并部署测试环境]
     I[Release_Manager<br/>版本发布准备]
     J[Production Approval<br/>生产审批]
@@ -47,7 +47,7 @@ flowchart LR
 | **Development_Readiness_Reviewer** | 在开发前审核 Issue 及适用的 requirement/design/plan | 就绪结论、阻塞项、stage 转换 | 是进入开发的唯一门禁，不替代需求、设计、计划或代码评审 |
 | **Developer** | 按计划实现后端、前端、测试，保持代码符合项目架构与规范 | 源码变更、测试用例、验证结果 | Service 层处理 HTTP，Manager 层处理业务和数据库，不越层 |
 | **QA / Playwright 测试角色** | 设计用户旅程测试、生成或修复 Playwright E2E 自动化用例 | E2E 测试计划、Playwright 用例、测试报告 | 覆盖 happy path、边界条件、错误处理和关键用户路径 |
-| **Reviewer** | 审查 PR 的正确性、风险、测试证据和可维护性 | Review 结论、合并建议 | 重点看行为回归、缺失测试、发布风险 |
+| **GitHub PR Review（平台流程，非 Agent）** | 在 GitHub.com 审查 PR 的正确性、风险、测试证据和可维护性 | 人工 approval、Review 评论、合并决定 | 至少一名非提交者人工审批；Copilot Review 仅作辅助，不替代人工 approval |
 | **Release_Manager** | 决定语义化版本，创建 release/hotfix 分支，更新版本文件和发布说明 | VERSION、CHANGELOG、Release Notes、Release PR | 不直接推 main，不提前打 tag，release PR guard 必须通过 |
 | **DevOps / CI/CD** | 维护 GitHub Actions、环境变量、镜像构建、Kubernetes 部署与回归流水线 | Staging/Production 部署、运行日志、制品报告 | 保障环境隔离、密钥安全、生产审批和回滚可追踪 |
 
@@ -529,9 +529,10 @@ git push origin --delete feature/<short-feature-name>
 
 ---
 
-## 8. 阶段六：PR 校验与代码审查
+## 8. 阶段六：GitHub PR 校验与代码审查
 
 所有功能和修复都通过 PR 合入 main，禁止直接推送 main。
+该阶段发生在 GitHub.com，不对应本地自定义 Agent，也不新增 Issue stage。Developer 负责创建 PR、补充测试证据并请求审核；GitHub Branch Protection 或 Ruleset 负责强制执行合并门禁。
 
 ```mermaid
 flowchart TD
@@ -540,11 +541,11 @@ flowchart TD
     B --> D[前端 npm build]
     B --> E{release/hotfix PR?}
     E -- 是 --> F[Release PR Guard]
-    E -- 否 --> G[Reviewer 审查]
+    E -- 否 --> G[GitHub 人工 Review]
     F --> G
     C --> G
     D --> G
-    G --> H{CI + Review 通过?}
+    G --> H{required checks 通过<br/>且至少 1 名非提交者 approval?}
     H -- 否 --> I[修改后重新提交]
     I --> B
     H -- 是 --> J[合并到 main]
@@ -558,7 +559,16 @@ flowchart TD
 | `frontend-build` | 安装前端依赖并执行生产构建 |
 | `release-pr-guard` | release/hotfix 分支额外校验 VERSION、CHANGELOG、Release Notes |
 
-**参考路径：** `.github/workflows/pr-validation.yml`、`scripts/check_release_pr.py`
+**GitHub.com 审核与合并门禁：**
+
+- 至少一名非 PR 提交者在 GitHub.com 提交 approval；
+- GitHub Copilot Code Review 可以按需请求，但只能作为补充建议；
+- `backend-tests` 和 `frontend-build` 必须通过；
+- `release/*` 和 `hotfix/*` PR 还必须通过 `release-pr-guard`；
+- 新提交应使旧 approval 失效，阻塞性 Review conversation 必须解决；
+- PR 作者或自动化不得绕过 Ruleset 自行合并。
+
+**参考路径：** `.github/workflows/pr-validation.yml`、`scripts/check_release_pr.py`、`docs/BRANCHING-AND-DEPLOYMENT.md`
 
 ---
 
@@ -685,7 +695,7 @@ sequenceDiagram
     participant DRR as Development_Readiness_Reviewer
     participant DEV as Developer
     participant QA as QA / Playwright
-    participant PR as PR Reviewer + CI
+    participant PR as GitHub PR Review + CI
     participant STG as Staging
     participant RM as Release_Manager
     participant PROD as Production
@@ -791,7 +801,7 @@ gitGraph
 - [ ] 提交信息遵循 Conventional Commits
 - [ ] PR 描述包含背景、变更点、测试证据
 - [ ] PR 已关联源 Issue，且 `Refs` / `Closes` / `Fixes` 语义正确
-- [ ] Reviewer 已确认无阻塞问题
+- [ ] GitHub.com 至少一名非提交者已 approval，且无未解决的阻塞性 Review conversation
 - [ ] release/hotfix PR 已通过 release guard
 
 ### 上线前

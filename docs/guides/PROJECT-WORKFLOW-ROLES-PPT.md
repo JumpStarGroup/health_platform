@@ -84,7 +84,7 @@
 - Development_Readiness_Reviewer
 - Developer
 - QA / Playwright
-- Reviewer
+- GitHub PR Review（非 Agent）
 - Release_Manager
 - DevOps / CI/CD
 - Staging / Production
@@ -112,7 +112,7 @@
 | Development_Readiness_Reviewer | 审核是否可以进入开发 | 就绪结论、阻塞项、stage 转换 |
 | Developer | 编码、测试、联调、提交 PR | 代码、测试、PR |
 | QA / Playwright | 设计与维护 E2E | 测试计划、E2E 用例 |
-| Reviewer | 代码审查 | Review 结论 |
+| GitHub PR Review（非 Agent） | GitHub.com 人工审查 + CI 门禁 | approval、Review 评论、合并决定 |
 | Release_Manager | 版本发布准备 | VERSION、CHANGELOG、Release Notes |
 | DevOps / CI/CD | 构建、部署、回归 | 流水线、环境、报告 |
 
@@ -222,11 +222,15 @@ flowchart LR
   - Terminal 3：测试 / Git / 一次性命令
 - 提交代码
 - 创建 PR 到 `main`
+- 在 GitHub.com 请求至少一名非提交者人工 Review
+- 等待 required checks 和人工 approval，并解决阻塞性 Review conversation
 - 合并后清理分支
 
 **关键规范：**
 - 使用 Conventional Commits
 - PR 里写清背景、变更、测试证据、风险
+- GitHub Copilot Code Review 可选，但不能替代人工 approval
+- PR 作者和自动化不得绕过 Ruleset 或自行批准
 - feature PR 只有在完全满足验收标准时才可用 `Closes/Fixes`
 
 ---
@@ -258,6 +262,8 @@ flowchart LR
 - 单元测试：Pytest
 - UI 回归：Playwright E2E
 - PR 校验：后端测试 + 前端 build
+- GitHub.com 人工门禁：至少一名非提交者 approval
+- 所有阻塞性 Review conversation 必须解决
 - 发布校验：版本文件、变更日志、发布说明
 - 生产发布后自动回归
 
@@ -354,7 +360,7 @@ flowchart LR
 - Development_Readiness_Reviewer：决定是否允许进入开发
 - Developer：实现并验证
 - QA：补齐关键路径回归
-- Reviewer：把关代码质量
+- GitHub PR Review：至少一名非提交者人工审批；Copilot Review 仅作辅助
 - Release_Manager：把功能变成可发布版本
 - DevOps / CI/CD：把发布流程自动化
 

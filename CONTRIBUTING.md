@@ -103,8 +103,10 @@ VERSION 文件
 2. 编写代码和测试
 3. 确保测试通过：`pytest tests/ -v`
 4. 提交 PR，填写描述
-5. 等待代码审查
-6. 合并后删除分支
+5. 在 GitHub.com 请求至少一名非提交者进行人工代码审查
+6. 等待 required checks 通过、至少一个人工 approval，并解决所有阻塞性 Review conversation
+7. 可选请求 GitHub Copilot Code Review；其建议不替代人工 approval
+8. 合并后删除分支
 
 ## 分支命名、worktree 使用与版本发布
 

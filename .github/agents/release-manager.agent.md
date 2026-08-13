@@ -139,7 +139,7 @@ gh pr create \
 - [ ] docs/releases/RELEASE_NOTES_v<version>.md 已创建
 - [ ] release PR guard 通过（python scripts/check_release_pr.py）
 - [ ] 单元测试通过
-- [ ] 已邀请 Reviewer"
+- [ ] 已在 GitHub.com 邀请至少一名非提交者进行人工 Review"
 ```
 
 ### Phase 7 — Post-Merge Tag (after PR is merged)
