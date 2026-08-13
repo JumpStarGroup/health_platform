@@ -128,14 +128,15 @@
 **页面内容：**
 - 先确认问题是什么，再谈怎么做
 - 创建或关联 GitHub Issue
-- 输出需求文档 `req-*.md`
-- 需求文档只讲 What / Why / 范围 / 验收
+- 简单需求直接在 Issue 中形成可验收需求
+- 复杂需求输出 `req-*.md`
+- Issue 或需求文档只讲 What / Why / 范围 / 验收
 - 不讨论数据库、API 实现细节
 
 **关键规范：**
-- 需求阶段使用 `docs/<issue>-<slug>` 文档协作分支
-- docs PR 只用 `Refs #<issue>`
-- 不直接在 `main` 上写需求文档
+- 只有复杂需求使用 `docs/<issue>-<slug>` 文档协作分支
+- 复杂需求的 docs PR 只用 `Refs #<issue>`
+- 简单需求不需要 docs 分支或 docs-only PR
 
 **建议图示：**
 - 需求澄清流程：问题 → Issue → 需求文档 → 审核

@@ -304,30 +304,34 @@ Issue 在问题达到“值得持续跟踪”的最小信息量后创建；docs 
 
 | 角色 | 工作基线 | 操作方式 | 交付物 |
 |---|---|---|---|
-| Product_Manager | 最新 `main` 拉出的 `docs/*` | 编写 `docs/requirements/req-*.md`，同步 Issue | 需求文档、Issue 摘要 |
-| 需求审批 | 同一个 `docs/*` | 评审文档，在 PR 评论或文档中提出 blocking/high/medium/low 问题 | 审批结论、澄清问题 |
-| System_Architect | 同一个文档分支，先同步最新远端提交 | 增加 `docs/Design/design-*.md` 或架构补充 | 设计文档 |
-| Tech_Lead_Planner | 同一个文档分支，基于已确认 design | 增加 `docs/plan/plan-*.md` | 实施计划 |
-| Development_Readiness_Reviewer | 已合入 docs-only PR 的最新 `main` | 交叉审核 Issue 与 requirement/design/plan，并决定是否 ready | 就绪结论、阻塞项、stage 转换 |
-| Developer | docs-only PR 合并后的最新 `main` | 创建 `feature/*` 或 `fix/*`，开始编码 | 代码、测试、PR |
+| Product_Manager | 简单需求使用 Issue；复杂需求使用最新 `main` 拉出的 `docs/*` | 完善 Issue，复杂需求再编写 `req-*.md` | Issue，或需求文档与 Issue 摘要 |
+| Requirement_Reviewer | 简单需求读取 Issue；复杂需求读取同一个 `docs/*` | 审核需求本身并提出 blocking/high/medium/low 问题 | 需求审批结论、澄清问题 |
+| System_Architect | 复杂需求的同一个文档分支 | 增加 `docs/Design/design-*.md` 或架构补充 | 设计文档 |
+| Tech_Lead_Planner | 复杂需求的同一个文档分支 | 增加 `docs/plan/plan-*.md` | 实施计划 |
+| Development_Readiness_Reviewer | 简单需求读取 Issue；复杂需求读取已合入 docs-only PR 的最新 `main` | 审核适用产物并决定是否 ready | 就绪结论、阻塞项、stage 转换 |
+| Developer | Issue 已 ready 后的最新 `main` | 创建 `feature/*` 或 `fix/*`，开始编码 | 代码、测试、PR |
 
 ### 6.5.5 什么时候创建 Feature 分支
 
 **建议不要在 Product_Manager 刚开始探索时就创建 `feature/*`。**
 
-推荐的创建条件：
+所有需求都必须满足：
 
-- 需求文档已经形成可验收 AC；
+- Issue 已形成可验收 AC；
 - 关键范围和非范围已经明确；
-- System_Architect 已确认技术方向可行；
-- Tech_Lead_Planner 已拆出最小可执行任务；
-- docs-only PR 已合入 `main`；
 - Development_Readiness_Reviewer 已将 Issue 设置为 `stage:ready-for-development`；
 - 有明确 Developer 接手实现。
 
+`complexity:complex` 还必须满足：
+
+- requirement/design/plan 已批准；
+- System_Architect 已确认技术方向可行；
+- Tech_Lead_Planner 已拆出最小可执行任务；
+- docs-only PR 已合入 `main`。
+
 满足以上条件后，由 **Developer** 从最新 `main` 创建 `feature/*` 或 `fix/*` 分支。创建分支和安排开发不能替代开发前就绪审核。
 
-### 6.5.6 Feature 分支如何拿到最新 requirements/design/plan
+### 6.5.6 复杂需求的 Feature 分支如何拿到最新 requirements/design/plan
 
 首选路径是：
 

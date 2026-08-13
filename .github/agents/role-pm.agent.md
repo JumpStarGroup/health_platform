@@ -79,9 +79,9 @@ Before setting `stage:in-development`, the issue must be in `stage:ready-for-dev
 - `docs/<issue>-<slug>` is used only for complex requirements that need formal req/design/plan artifacts.
 - `main` is never edited directly. Documentation for complex work lands through a docs-only PR.
 - The docs PR must include `Refs #[ID]`; it must not close the Issue.
-- Product work does not create `feature/*` branches. `feature/*` / `fix/*` starts only after docs are approved and implementation is ready.
+- Product work does not create `feature/*` branches. `feature/*` / `fix/*` starts only after the Issue is `stage:ready-for-development`; complex work additionally requires approved docs on `main`.
 - Business users are not required to understand Git or branch mechanics; technical staff or AI tooling can create the repo branch when needed.
-- If the requirement changes materially, update the Issue and the docs artifacts before handing off.
+- If the requirement changes materially, update the Issue and any applicable complex-work docs before handing off.
 
 ## Output Standard
 **File Path**:
