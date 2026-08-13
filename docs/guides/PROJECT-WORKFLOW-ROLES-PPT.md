@@ -78,9 +78,10 @@
 
 **页面内容：**
 - Product_Manager
-- 需求审批
+- Requirement_Reviewer
 - System_Architect
 - Tech_Lead_Planner
+- Development_Readiness_Reviewer
 - Developer
 - QA / Playwright
 - Reviewer
@@ -105,9 +106,10 @@
 | 角色 | 核心职责 | 主要产物 |
 |---|---|---|
 | Product_Manager | 澄清需求、定义价值、控制范围 | 需求文档、Issue |
-| 需求审批 | 审核范围、风险、验收标准 | 评审结论、澄清问题 |
+| Requirement_Reviewer | 只审核需求本身的范围、风险和验收标准 | 需求评审结论、澄清问题 |
 | System_Architect | 设计系统方案 | design 文档 |
 | Tech_Lead_Planner | 拆任务、定阶段、定验证 | plan 文档 |
+| Development_Readiness_Reviewer | 审核是否可以进入开发 | 就绪结论、阻塞项、stage 转换 |
 | Developer | 编码、测试、联调、提交 PR | 代码、测试、PR |
 | QA / Playwright | 设计与维护 E2E | 测试计划、E2E 用例 |
 | Reviewer | 代码审查 | Review 结论 |
@@ -140,9 +142,9 @@
 
 ---
 
-## Slide 6 需求审批：为什么要先审需求
+## Slide 6 Requirement Review：为什么要先审需求
 
-**目标：** 让新人理解需求审批不是“走形式”，而是风险前移。
+**目标：** 让新人理解 Requirement_Reviewer 只审核需求本身，开发就绪由独立门禁决定。
 
 **页面内容：**
 - 检查目标是否清楚
@@ -150,6 +152,7 @@
 - 检查验收标准是否可测试
 - 检查风险、依赖、回滚是否有说明
 - 阻塞项不通过，需退回修订
+- 该角色不设置 `stage:ready-for-development`
 
 **建议图示：**
 - 一个“通过 / 有条件通过 / 退回修订”的决策树
@@ -182,7 +185,9 @@
 
 **页面内容：**
 - 不在需求刚开始时就创建 feature 分支
-- 等需求、设计、计划批准后，再进入实现
+- 简单需求和复杂需求都必须通过 Development_Readiness_Reviewer
+- 复杂需求必须先批准并合入 requirement/design/plan
+- Issue 达到 `stage:ready-for-development` 后，再进入实现
 - 统一从最新 `main` 创建 `feature/<scope>-<desc>` 或 `fix/<scope>-<desc>`
 - 这样 feature 分支天然包含已批准文档
 
@@ -190,8 +195,11 @@
 ```mermaid
 flowchart LR
     A[docs 分支完成需求/设计/计划] --> B[docs PR 合入 main]
-    B --> C[Developer 从最新 main 创建 feature/fix]
-    C --> D[开始编码]
+    B --> C[Development_Readiness_Reviewer]
+    C --> D{stage:ready-for-development?}
+    D -- 否 --> A
+    D -- 是 --> E[Developer 从最新 main 创建 feature/fix]
+    E --> F[开始编码并设置 stage:in-development]
 ```
 
 **一句话总结：**
@@ -339,9 +347,10 @@ flowchart LR
 
 ### 4.1 角色分工短句
 - Product_Manager：定义问题和价值
-- 需求审批：控制范围和风险
+- Requirement_Reviewer：审核需求本身
 - System_Architect：定义系统如何做
 - Tech_Lead_Planner：拆成能执行的任务
+- Development_Readiness_Reviewer：决定是否允许进入开发
 - Developer：实现并验证
 - QA：补齐关键路径回归
 - Reviewer：把关代码质量

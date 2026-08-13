@@ -14,9 +14,11 @@ Health Platform 当前采用"需求可追踪 + 轻量主干开发 + PR 校验 + 
 ```mermaid
 flowchart LR
     A[Product_Manager<br/>需求澄清与价值定义]
-    B[需求审批<br/>范围/风险/验收复核]
+    B[Requirement_Reviewer<br/>需求本身评审]
+    Q{complexity}
     C[System_Architect<br/>技术设计]
     D[Tech_Lead_Planner<br/>实施计划拆解]
+    M[Development_Readiness_Reviewer<br/>开发前就绪审核]
     E[Developer<br/>编码与单元测试]
     F[QA / Playwright<br/>E2E 测试设计与自动化]
     G[Reviewer<br/>代码审查与 PR 合并]
@@ -26,7 +28,10 @@ flowchart LR
     K[Release Production<br/>Tag 触发生产部署]
     L[Post Deploy E2E<br/>生产回归与报告]
 
-    A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L
+    A --> B --> Q
+    Q -- simple --> M
+    Q -- complex --> C --> D --> M
+    M --> E --> F --> G --> H --> I --> J --> K --> L
 ```
 
 ---
@@ -35,15 +40,43 @@ flowchart LR
 
 | 角色 | 主要职责 | 关键产出 | 责任边界 |
 |---|---|---|---|
-| **Product_Manager** | 澄清业务问题、定义用户价值、确定范围与验收标准，并关联 GitHub Issue | 需求文档 (`req-*.md`)、Issue 记录 | 只定义 What 和 Why，不讨论数据库表、API 实现等技术细节 |
-| **需求审批** | 审查 PRD/需求文档，识别阻塞项、风险、依赖与验收缺口 | 审批结论、澄清问题、风险清单 | 不替代研发设计，不在信息不足时直接通过 |
+| **Product_Manager** | 澄清业务问题、定义用户价值、确定范围与验收标准，并关联 GitHub Issue | 简单需求的 Issue，或复杂需求的 `req-*.md` | 只定义 What 和 Why，不讨论数据库表、API 实现等技术细节 |
+| **Requirement_Reviewer** | 审核需求本身的清晰度、范围、风险和验收标准 | 需求审批结论、澄清问题、风险清单 | 不审核 design/plan 的开发就绪性，不修改为 `stage:ready-for-development` |
 | **System_Architect** | 根据需求进行系统设计，识别数据库、API、后端、前端、测试影响面 | 技术设计文档 (`design-*.md`) | 关注结构、接口、边界和可行性，不直接写实现代码 |
 | **Tech_Lead_Planner** | 把设计拆成可执行、可测试、按依赖排序的开发任务 | 实施计划 (`plan-*.md`)、阶段验收步骤 | 保证任务足够细，能交给 Developer 执行 |
+| **Development_Readiness_Reviewer** | 在开发前审核 Issue 及适用的 requirement/design/plan | 就绪结论、阻塞项、stage 转换 | 是进入开发的唯一门禁，不替代需求、设计、计划或代码评审 |
 | **Developer** | 按计划实现后端、前端、测试，保持代码符合项目架构与规范 | 源码变更、测试用例、验证结果 | Service 层处理 HTTP，Manager 层处理业务和数据库，不越层 |
 | **QA / Playwright 测试角色** | 设计用户旅程测试、生成或修复 Playwright E2E 自动化用例 | E2E 测试计划、Playwright 用例、测试报告 | 覆盖 happy path、边界条件、错误处理和关键用户路径 |
 | **Reviewer** | 审查 PR 的正确性、风险、测试证据和可维护性 | Review 结论、合并建议 | 重点看行为回归、缺失测试、发布风险 |
 | **Release_Manager** | 决定语义化版本，创建 release/hotfix 分支，更新版本文件和发布说明 | VERSION、CHANGELOG、Release Notes、Release PR | 不直接推 main，不提前打 tag，release PR guard 必须通过 |
 | **DevOps / CI/CD** | 维护 GitHub Actions、环境变量、镜像构建、Kubernetes 部署与回归流水线 | Staging/Production 部署、运行日志、制品报告 | 保障环境隔离、密钥安全、生产审批和回滚可追踪 |
+
+---
+
+## 2.1 需求复杂度与状态模型
+
+需求复杂度和流程阶段是两个不同维度：
+
+- `complexity:simple`: 需求可以直接用 GitHub Issue 描述，验收标准清晰，不需要正式 req/design/plan 文档。
+- `complexity:complex`: 需求需要独立的 requirement/design/plan 文档，并在 docs 分支中协作评审。
+- `stage:draft`: 需求刚被提出或仍在澄清中。
+- `stage:requirements-review`: 需求和复杂需求文档处于开发前准备或评审过程。
+- `stage:ready-for-development`: 需求已通过开发前门禁，允许进入实现。
+- `stage:in-development`: 已正式开始编码。
+
+责任边界指“谁有权决定并触发 stage 转换”，而不是某角色负责该 stage 期间的全部工作：
+
+| Stage 转换 | 决策角色 |
+|---|---|
+| `stage:draft` → `stage:requirements-review` | Product_Manager |
+| `stage:requirements-review` → `stage:ready-for-development` | Development_Readiness_Reviewer |
+| `stage:ready-for-development` → `stage:in-development` | Developer |
+
+Requirement_Reviewer 负责需求本身的审批结论，但不负责设置 `stage:ready-for-development`。System_Architect 和 Tech_Lead_Planner 形成复杂需求的设计与计划，也不修改 stage。具体 label 操作可以由确定性脚本或客户端命令执行，但必须依据对应角色作出的转换决定。
+
+建议只保留这四个 issue stage，避免出现 `design`、`plan`、`implementation-ready` 等不对应明确职责的状态。设计/计划是文档活动，不应当作为 issue stage 过度扩张；状态必须和谁负责更新保持一致。
+
+> 关键约束：在进入 `stage:in-development` 之前，Issue 必须已经达到 `stage:ready-for-development`。只有 Development_Readiness_Reviewer 可以作出该就绪决定。对于复杂需求，它必须确认 requirement/design/plan 文档已存在、已按流程批准、内容和 Issue 一致且互不矛盾。
 
 ---
 
@@ -57,11 +90,14 @@ flowchart TD
     B --> C{是否已有 GitHub Issue?}
     C -- 有 --> D[关联现有 Issue]
     C -- 无 --> E[创建新 Issue]
-    D --> F[编写需求文档]
+    D --> F{complexity}
     E --> F
-    F --> G[用户确认]
-    G --> H[同步需求摘要到 Issue]
-    H --> I[交给需求审批或架构设计]
+    F -- simple --> G[在 Issue 中完善需求与 AC]
+    F -- complex --> H[创建 docs 分支并编写 req 文档]
+    G --> I[用户确认]
+    H --> I
+    I --> J[设置 stage:requirements-review]
+    J --> K[交给 Requirement_Reviewer]
 ```
 
 **需求文档建议包含：**
@@ -91,7 +127,9 @@ flowchart TD
     E -- 否 --> G[审批通过]
     F --> H[补充澄清问题和风险清单]
     H --> A
-    G --> I[进入架构设计]
+    G --> I{complexity}
+    I -- simple --> J[交给 Development_Readiness_Reviewer]
+    I -- complex --> K[进入架构设计]
 ```
 
 **审批重点包括：**
@@ -158,7 +196,7 @@ flowchart TD
     F --> H
     G --> H
     H --> I[同步 Issue]
-    I --> J[交给 Developer]
+    I --> J[交给 Development_Readiness_Reviewer]
 ```
 
 **计划拆解原则：**
@@ -183,7 +221,28 @@ flowchart TD
 | 需求/设计/计划阶段 | 澄清 What、Why、How、任务拆分 | `docs/<issue>-<slug>` | 否 |
 | 开发实现阶段 | 按已批准文档实现代码和测试 | `feature/<scope>-<desc>` 或 `fix/<scope>-<desc>` | 是 |
 
-### 6.5.1 为什么不直接在 main 上写需求文档
+### 6.5.1 需求评审与开发前就绪审核
+
+Issue 只保留最小状态模型：
+
+| issue stage | 含义 | 转换决策人 |
+|---|---|---|
+| `stage:draft` | 新需求还在收集和澄清 | Product_Manager 创建或保持 |
+| `stage:requirements-review` | 需求和复杂需求文档处于开发前准备或评审过程 | Product_Manager 提交评审时进入 |
+| `stage:ready-for-development` | 开发前门禁通过，允许开始实现 | Development_Readiness_Reviewer |
+| `stage:in-development` | 代码已开始开发 | Developer |
+
+审核拆为两个明确职责：
+
+1. Requirement_Reviewer 只审核需求本身。简单需求通过后交给开发前就绪审核；复杂需求通过后进入设计和计划，但仍保持 `stage:requirements-review`。
+2. Development_Readiness_Reviewer 是进入开发的唯一门禁：
+
+   - 对于 `complexity:simple`，确认需求评审已通过、无阻塞项，Issue 稳定、可验收且可测试；
+   - 对于 `complexity:complex`，确认 requirement/design/plan 已齐备并批准，且与 Issue 互相一致、没有矛盾；
+   - 审核不通过时保持 `stage:requirements-review`，明确列出阻塞项、证据、责任人和下一步；
+   - 审核通过后才设置 `stage:ready-for-development`。
+
+### 6.5.2 为什么不直接在 main 上写需求文档
 
 `main` 始终保持可部署状态，而且仓库规则要求所有变更通过 PR 合入。因此，即使只是 `docs/requirements`、`docs/Design`、`docs/plan` 下的文档，也不应由 Product_Manager、System_Architect 或 Tech_Lead_Planner 直接提交到 `main`。
 
@@ -201,10 +260,14 @@ flowchart TD
     H -- 否 --> I[继续在同一文档分支修订]
     I --> G
     H -- 是 --> J[合并文档 PR 到 main]
-    J --> K[Developer 从最新 main 创建 feature/fix 分支]
+    J --> K[Development_Readiness_Reviewer 执行开发前门禁]
+    K --> L{是否 ready?}
+    L -- 否 --> I
+    L -- 是 --> M[设置 stage:ready-for-development]
+    M --> N[Developer 从最新 main 创建 feature/fix 分支]
 ```
 
-### 6.5.2 推荐分支模型
+### 6.5.3 推荐分支模型
 
 **首选：两段式分支模型。**
 
@@ -231,10 +294,13 @@ gitGraph
 |---|---|---|---|---|
 | `docs/<issue>-<slug>` | PM 开始形成可落库需求文档时 | Product_Manager | `main` | requirements/design/plan 文档 |
 | `docs/<issue>-<slug>` | 需求还不稳定但需要多人协作时 | Product_Manager 或需求审批负责人 | `main` | 草案、评审记录、方案候选 |
-| `feature/<scope>-<desc>` | 需求/设计/计划已批准，准备编码时 | Developer 或 Tech_Lead_Planner 指派 Developer 创建 | `main` | 代码、测试、必要文档更新 |
-| `fix/<scope>-<desc>` | 已确认缺陷并准备修复时 | Developer | `main` | 修复代码、回归测试、必要文档更新 |
+| `feature/<scope>-<desc>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 代码、测试、必要文档更新 |
+| `fix/<scope>-<desc>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 修复代码、回归测试、必要文档更新 |
 
-### 6.5.3 各角色基于哪个分支工作
+
+Issue 在问题达到“值得持续跟踪”的最小信息量后创建；docs 分支在需要形成正式、可评审的需求文档时创建。Issue 先于 docs 分支，早期探索内容保存在 Issue 描述和评论中，正式文档保存在 docs/<issue-id>-<slug> 分支并通过 PR 合入 main。
+
+### 6.5.4 各角色基于哪个分支工作
 
 | 角色 | 工作基线 | 操作方式 | 交付物 |
 |---|---|---|---|
@@ -242,9 +308,10 @@ gitGraph
 | 需求审批 | 同一个 `docs/*` | 评审文档，在 PR 评论或文档中提出 blocking/high/medium/low 问题 | 审批结论、澄清问题 |
 | System_Architect | 同一个文档分支，先同步最新远端提交 | 增加 `docs/Design/design-*.md` 或架构补充 | 设计文档 |
 | Tech_Lead_Planner | 同一个文档分支，基于已确认 design | 增加 `docs/plan/plan-*.md` | 实施计划 |
+| Development_Readiness_Reviewer | 已合入 docs-only PR 的最新 `main` | 交叉审核 Issue 与 requirement/design/plan，并决定是否 ready | 就绪结论、阻塞项、stage 转换 |
 | Developer | docs-only PR 合并后的最新 `main` | 创建 `feature/*` 或 `fix/*`，开始编码 | 代码、测试、PR |
 
-### 6.5.4 什么时候创建 Feature 分支
+### 6.5.5 什么时候创建 Feature 分支
 
 **建议不要在 Product_Manager 刚开始探索时就创建 `feature/*`。**
 
@@ -254,12 +321,13 @@ gitGraph
 - 关键范围和非范围已经明确；
 - System_Architect 已确认技术方向可行；
 - Tech_Lead_Planner 已拆出最小可执行任务；
-- docs-only PR 已合入 `main`，或者至少已被明确批准可以进入开发；
+- docs-only PR 已合入 `main`；
+- Development_Readiness_Reviewer 已将 Issue 设置为 `stage:ready-for-development`；
 - 有明确 Developer 接手实现。
 
-满足以上条件后，由 **Developer** 创建 `feature/*` 或 `fix/*` 分支。如果团队希望 Tech Lead 控制节奏，也可以由 **Tech_Lead_Planner** 在计划批准后创建空的 feature 分支并指派给 Developer，但实际编码仍由 Developer 完成。
+满足以上条件后，由 **Developer** 从最新 `main` 创建 `feature/*` 或 `fix/*` 分支。创建分支和安排开发不能替代开发前就绪审核。
 
-### 6.5.5 Feature 分支如何拿到最新 requirements/design/plan
+### 6.5.6 Feature 分支如何拿到最新 requirements/design/plan
 
 首选路径是：
 
@@ -271,30 +339,26 @@ git checkout -b feature/<scope>-<desc>
 
 因为 docs-only PR 已经合入 `main`，Developer 从最新 `main` 创建 feature 分支时，会自然带上最新的 `docs/requirements`、`docs/Design` 和 `docs/plan` 内容。
 
-如果文档 PR 尚未合并，但业务决定并行启动开发，有两种选择：
+复杂需求不允许在文档 PR 合并前启动开发，也不允许从 docs 分支拉出 feature 分支。必须先合并已批准文档、通过 Development_Readiness_Reviewer，再由 Developer 从最新 `main` 创建开发分支。
 
-| 方案 | 做法 | 风险 |
-|---|---|---|
-| 从 docs 分支拉出 feature 分支 | `git checkout docs/<issue>-<slug>` 后创建 `feature/*` | 后续文档变更和代码变更混在同一历史上，PR 需要更仔细拆分 |
-| 等 docs PR 合并后再开发 | Developer 从最新 `main` 创建 `feature/*` | 节奏稍慢，但最清晰、最可审计 |
+### 6.5.7 小团队快速模式
 
-默认推荐第二种：**先合并已批准文档，再创建开发分支**。
-
-### 6.5.6 小团队快速模式
-
-如果需求很小，例如一个明确 bug 或极小 UI 文案调整，可以使用单分支快速模式：
+如果需求很小，例如一个明确 bug 或极小 UI 文案调整，可以省略 docs 分支和正式设计/计划文档，但不能跳过需求评审和开发前门禁：
 
 ```mermaid
 flowchart LR
-    A[main] --> B[feature/fix 分支]
-    B --> C[补充轻量需求说明]
-    C --> D[编码与测试]
-    D --> E[一个 PR 合入 main]
+    A[Issue 中补充轻量需求与 AC] --> B[Requirement_Reviewer]
+    B --> C[Development_Readiness_Reviewer]
+    C --> D{stage:ready-for-development?}
+    D -- 否 --> A
+    D -- 是 --> E[从 main 创建 feature/fix 分支]
+    E --> F[编码与测试]
+    F --> G[一个 PR 合入 main]
 ```
 
 但只要涉及多人协作、架构设计、数据库/API 改动、发布风险或验收争议，仍应使用两段式分支模型。
 
-### 6.5.7 Issue 作为跨角色协作主线
+### 6.5.8 Issue 作为跨角色协作主线
 
 Product_Manager、System_Architect、Tech_Lead_Planner 会通过 GitHub MCP 创建或更新同一个 GitHub Issue。因此，Issue 应作为跨角色协作的主线，分支和 PR 则是把某一阶段产物合入仓库的变更载体。
 
@@ -356,9 +420,9 @@ flowchart TD
     N --> O[合并后清理分支]
 ```
 
-### 7.2 分支创建（Developer Agent 当前缺失步骤）
+### 7.2 分支创建
 
-> ⚠️ **Gap 分析**：当前 `role-developer.agent.md` 未包含分支创建步骤，该流程定义在独立的 `feature_branch_development_strategy.prompt.md` 中。
+`role-developer.agent.md` 和 `feature_branch_development_strategy.prompt.md` 均要求先通过开发前门禁，再从最新 `main` 创建实现分支。
 
 **正确做法（应在编码前执行）：**
 
@@ -379,9 +443,9 @@ git push -u origin feature/<short-feature-name>
 | `release/<version>` | 版本发布 | `release/1.2.0` |
 | `hotfix/<version>` | 紧急修复 | `hotfix/1.1.2` |
 
-### 7.3 本地验证（Developer Agent 当前缺失细节）
+### 7.3 本地验证
 
-> ⚠️ **Gap 分析**：当前 Developer Agent 只提到"Run full test suite + Check for linting errors"，未体现三终端联调模型和浏览器验证。
+Developer Agent 使用三终端模型完成本地集成验证。
 
 **正确做法（三终端模型）：**
 
@@ -411,9 +475,9 @@ cd tests/e2e
 npx playwright test tests/regression-user-journey-cn.spec.js --headed
 ```
 
-### 7.4 提交规范与 PR 创建（Developer Agent 当前缺失步骤）
+### 7.4 提交规范与 PR 创建
 
-> ⚠️ **Gap 分析**：当前 Developer Agent 的 Output 只列了"Modified source code files / Test files / All tests passing"，未包含提交和 PR 创建流程。handoff 直接交 PM，但未先创建 PR。
+Developer Agent 负责按 Conventional Commits 提交、推送实现分支并创建 PR。
 
 **正确做法：**
 
@@ -458,39 +522,6 @@ git pull origin main
 git branch -d feature/<short-feature-name>
 git push origin --delete feature/<short-feature-name>
 ```
-
-### 7.5 Developer Agent 改进建议
-
-综合以上分析，**建议在 `role-developer.agent.md` 的 Workflow 中补充以下步骤**：
-
-```mermaid
-flowchart TD
-    subgraph 当前 Developer Agent 流程
-        R[Read Plan]
-        I[Implementation Loop]
-        V[Final Verification]
-    end
-
-    subgraph 建议补充的步骤
-        B1[0. 创建 feature/fix 分支]
-        B2[3.5 三终端联调验证]
-        B3[4. Conventional Commits 提交]
-        B4[5. 推送并创建 PR]
-        B5[6. 合并后清理分支]
-    end
-
-    B1 --> R --> I --> V --> B2 --> B3 --> B4 --> B5
-```
-
-| 步骤 | 当前状态 | 建议改进 |
-|---|---|---|
-| 0. 分支创建 | ❌ 缺失 | 加入 Workflow Step 0，引用 `feature_branch_development_strategy.prompt.md` |
-| 1-3. 读计划/实现/测试 | ✅ 已有 | 保持不变 |
-| 3.5 本地联调 | ⚠️ 不充分 | 增加三终端模型说明和浏览器验证步骤 |
-| 4. 提交规范 | ❌ 缺失 | 加入 Conventional Commits 要求 |
-| 5. 创建 PR | ❌ 缺失 | 加入 PR 创建步骤和描述模板 |
-| 6. 合并后清理 | ❌ 缺失 | 加入分支删除命令 |
-| Handoff | ⚠️ 交 PM | 应改为"PR 创建后通知 Reviewer"，PM Review 是需求层回顾 |
 
 ---
 
@@ -644,9 +675,10 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant PM as Product_Manager
-    participant RA as 需求审批
+    participant RA as Requirement_Reviewer
     participant ARCH as System_Architect
     participant TL as Tech_Lead_Planner
+    participant DRR as Development_Readiness_Reviewer
     participant DEV as Developer
     participant QA as QA / Playwright
     participant PR as PR Reviewer + CI
@@ -655,13 +687,21 @@ sequenceDiagram
     participant PROD as Production
 
     PM->>PM: 澄清需求与业务价值
-    PM->>RA: 提交需求文档
+    PM->>RA: 设置 requirements-review 并提交需求
     RA-->>PM: 审批结论/澄清问题
-    RA->>ARCH: 需求通过
-    ARCH->>ARCH: 技术设计
-    ARCH->>TL: 交付设计文档
-    TL->>TL: 拆解实施计划
-    TL->>DEV: 分阶段任务
+    alt complexity:simple
+        RA->>DRR: 提交已批准 Issue
+    else complexity:complex
+        RA->>ARCH: 提交已批准 requirement
+        ARCH->>ARCH: 技术设计
+        ARCH->>TL: 交付设计文档
+        TL->>TL: 拆解实施计划
+        TL->>PR: 提交 docs-only PR
+        PR-->>TL: 批准并合入 main
+        TL->>DRR: 提交 Issue + requirement/design/plan
+    end
+    DRR->>DRR: 审核齐备性、一致性和阻塞项
+    DRR->>DEV: ready，设置 stage:ready-for-development
     DEV->>DEV: 创建 feature 分支
     DEV->>DEV: 编码 + 单元测试
     DEV->>DEV: 三终端联调验证
@@ -679,72 +719,7 @@ sequenceDiagram
 
 ---
 
-## 13. Developer Agent Gap 分析总结
-
-### 13.1 当前 Developer Agent 定义
-
-来源文件：`.github/agents/role-developer.agent.md`
-
-```
-Workflow:
-1. Read Plan
-2. Implementation Loop (Write Test → Write Code → Verify → Refactor)
-3. Final Verification (Run full test suite + Check linting)
-
-Output:
-- Modified source code files
-- New/Updated test files
-- All tests passing
-
-Handoff:
-- → Product_Manager (Request Review)
-```
-
-### 13.2 缺失对照表
-
-| 环节 | Developer Agent 现状 | 实际项目约定（其他文档中） | 影响 |
-|---|---|---|---|
-| **分支创建** | ❌ 完全未提及 | `feature_branch_development_strategy.prompt.md` 第 2 步 | 可能导致直接在 main 上开发 |
-| **三终端联调** | ⚠️ 仅提"Run full test suite" | `invoke_app_with_different_Terminals.prompt.md` | 缺少前后端联调验证 |
-| **提交规范** | ❌ 未提及 | `CONTRIBUTING.md` + prompt | 提交格式不规范 |
-| **PR 创建** | ❌ 未提及 | `feature_branch_development_strategy.prompt.md` 第 5 步 | 代码可能不走 PR 流程 |
-| **PR 描述模板** | ❌ 未提及 | 同上，要求写背景/变更/测试 | 缺少可追踪信息 |
-| **分支清理** | ❌ 未提及 | `feature_branch_development_strategy.prompt.md` 第 6 步 | 远程分支堆积 |
-| **Handoff 目标** | ⚠️ 交 PM | 实际应先交 Reviewer/CI | PM 做的是需求层回顾，不是代码 Review |
-
-### 13.3 建议改进方案
-
-将 Developer Agent 的 Workflow 扩展为完整的开发闭环：
-
-```
-## Workflow (建议版)
-0. **Branch Setup**:
-   - Sync main and create feature/* or fix/* branch.
-   - Push branch to remote.
-1. **Read Plan** (现有)
-2. **Implementation Loop** (现有)
-3. **Local Verification**:
-   - Start backend (Terminal 1) + frontend (Terminal 2).
-   - Run pytest in Terminal 3.
-   - Browser verify at http://localhost:3000.
-   - Run E2E if UI changes involved.
-4. **Commit & Push**:
-   - Stage changes and commit with Conventional Commits format.
-   - Push feature branch.
-5. **Create PR**:
-   - Open PR targeting main.
-   - Fill PR description (background, changes, tests, issue ref).
-6. **Post-Merge Cleanup**:
-   - Delete local and remote feature branch.
-
-## Handoff
-- → Reviewer / CI (code review + automated checks)
-- → Product_Manager (requirements-level review after PR merged)
-```
-
----
-
-## 14. 分支策略与 Git 流
+## 13. 分支策略与 Git 流
 
 ```mermaid
 gitGraph
@@ -784,7 +759,7 @@ gitGraph
 
 ---
 
-## 15. 推荐检查清单
+## 14. 推荐检查清单
 
 ### 需求进入开发前
 
@@ -793,7 +768,9 @@ gitGraph
 - [ ] 验收标准可测试
 - [ ] 权限、异常路径、边界值已覆盖
 - [ ] 需求已同步 GitHub Issue
-- [ ] 需求审批结论为通过或有条件通过
+- [ ] Requirement_Reviewer 已通过需求本身
+- [ ] Development_Readiness_Reviewer 已确认无未解决阻塞项
+- [ ] Issue 已设置为 `stage:ready-for-development`
 
 ### Developer 开始前
 
@@ -831,7 +808,7 @@ gitGraph
 
 ---
 
-## 16. 流程优点与注意点
+## 15. 流程优点与注意点
 
 ### 优点
 
@@ -848,7 +825,6 @@ gitGraph
 
 | 注意点 | 建议 |
 |---|---|
-| Developer Agent 定义不完整 | 按 §13.3 补充分支、验证、提交、PR 流程 |
 | 文档目录大小写不统一 | `docs/Design` vs `docs/design`，建议统一 |
 | 默认 trunk 流与可选环境分支并存 | 日常按 feature/fix → main；按需启用 develop/staging |
 | 生产依赖环境配置 | DATABASE_URL、JWT_SECRET 等必须提前配置 |
@@ -856,7 +832,7 @@ gitGraph
 
 ---
 
-## 17. 相关文档索引
+## 16. 相关文档索引
 
 | 文档 | 路径 | 用途 |
 |---|---|---|
