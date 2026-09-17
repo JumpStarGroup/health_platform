@@ -166,9 +166,12 @@ workflow 尚不接受 hotfix tag 时，**禁止**为绕过校验而修改 tag �
 :: 在 hotfix 分支的确切 commit 上本地构建并推送，产出 digest
 git checkout hotfix/<version>
 git rev-parse HEAD
-docker build -t ghcr.io/<org>/<repo>-backend:hotfix-<version> -f backend/Dockerfile .
+docker build -t ghcr.io/<org>/<repo>-backend:hotfix-<version> -f Dockerfile.backend .
 docker push ghcr.io/<org>/<repo>-backend:hotfix-<version>
 docker inspect --format="{{index .RepoDigests 0}}" ghcr.io/<org>/<repo>-backend:hotfix-<version>
+docker build -t ghcr.io/<org>/<repo>-frontend:hotfix-<version> -f Dockerfile.frontend.nonroot .
+docker push ghcr.io/<org>/<repo>-frontend:hotfix-<version>
+docker inspect --format="{{index .RepoDigests 0}}" ghcr.io/<org>/<repo>-frontend:hotfix-<version>
 ```
 
 **约束：** ①构建**必须**在干净工作区、由 `DevOps_Engineer` 执行；②commit SHA、两个 digest **必须**记入 Hotfix PR；③生产部署**必须**使用同一 digest；④本路径**仅限** B-27 完成前使用，每次使用记入附录 B 并推动 B-27 关闭。
