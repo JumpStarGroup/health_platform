@@ -22,7 +22,7 @@ handoffs:
 
 ### 1. Release Preparation & Branch Freeze
 - Determine next version `vX.Y.Z` based on changes.
-- Create release branch `release/vX.Y.Z` from `main`. Record the Release Freeze Commit SHA.
+- Create release branch `release/X.Y.Z` (for example, `release/1.2.0`) from `main`. Record the Release Freeze Commit SHA.
 - Generate `Release_Manifest` summarizing all candidate Issues at `stage:developed`.
 
 ### 2. Double Evidence Audit
