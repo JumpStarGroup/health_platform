@@ -1,0 +1,226 @@
+# Azure DevOps Server equivalent of .github/workflows/deploy-development.yml.
+# Run manually and store credentials in the health-platform-development variable group.
+
+trigger: none
+pr: none
+
+parameters:
+  - name: skipBuild
+    displayName: Skip image build and deploy an existing image tag
+    type: boolean
+    default: false
+  - name: imageTag
+    displayName: Existing image tag to deploy when skipBuild is selected
+    type: string
+    default: development
+  - name: agentPool
+    displayName: Linux agent pool
+    type: string
+    default: Default
+  - name: kubeconfigSecureFile
+    displayName: Development kubeconfig secure file
+    type: string
+    default: health-platform-development-kubeconfig
+
+variables:
+  - group: health-platform-development
+  - name: registryUrl
+    value: ghcr.io/jumpstargroup
+  - name: backendImage
+    value: health-platform-backend
+  - name: frontendImage
+    value: health-platform-frontend
+
+stages:
+  - stage: Build
+    displayName: Build and push images
+    condition: and(succeeded(), eq('${{ parameters.skipBuild }}', 'false'))
+    pool:
+      name: ${{ parameters.agentPool }}
+      demands:
+        - Agent.OS -equals Linux
+    jobs:
+      - job: BuildAndPush
+        displayName: Build and push backend and frontend
+        steps:
+          - checkout: self
+            clean: true
+
+          - bash: |
+              set -euo pipefail
+              command -v docker >/dev/null || {
+                echo "docker is required on the self-hosted Linux agent."
+                exit 1
+              }
+              : "${GHCR_USERNAME:?ghcrUsername must be set in the variable group}"
+              : "${GHCR_PUSH_TOKEN:?ghcrPushToken must be set as a secret variable}"
+              printf '%s' "$GHCR_PUSH_TOKEN" | docker login ghcr.io --username "$GHCR_USERNAME" --password-stdin
+            displayName: Log in to GitHub Container Registry
+            env:
+              GHCR_USERNAME: $(ghcrUsername)
+              GHCR_PUSH_TOKEN: $(ghcrPushToken)
+
+          - bash: |
+              set -euo pipefail
+              sha_tag="sha-$(Build.SourceVersion)"
+
+              docker build \
+                --file Dockerfile.backend \
+                --tag "$(registryUrl)/$(backendImage):${sha_tag}" \
+                --tag "$(registryUrl)/$(backendImage):development" \
+                .
+              docker push "$(registryUrl)/$(backendImage):${sha_tag}"
+              docker push "$(registryUrl)/$(backendImage):development"
+            displayName: Build and push backend image
+
+          - bash: |
+              set -euo pipefail
+              sha_tag="sha-$(Build.SourceVersion)"
+
+              docker build \
+                --file Dockerfile.frontend.nonroot \
+                --tag "$(registryUrl)/$(frontendImage):${sha_tag}" \
+                --tag "$(registryUrl)/$(frontendImage):development" \
+                .
+              docker push "$(registryUrl)/$(frontendImage):${sha_tag}"
+              docker push "$(registryUrl)/$(frontendImage):development"
+            displayName: Build and push frontend image
+
+          - bash: docker logout ghcr.io
+            displayName: Log out of GitHub Container Registry
+            condition: always()
+
+  - stage: Deploy
+    displayName: Deploy development
+    dependsOn: Build
+    condition: |
+      and(
+        not(canceled()),
+        or(
+          eq('${{ parameters.skipBuild }}', 'true'),
+          in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues')
+        )
+      )
+    pool:
+      name: ${{ parameters.agentPool }}
+      demands:
+        - Agent.OS -equals Linux
+    jobs:
+      - deployment: DeployDevelopment
+        displayName: Deploy to development Kubernetes
+        environment: development
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  clean: true
+
+                - task: DownloadSecureFile@1
+                  name: kubeconfig
+                  displayName: Download development kubeconfig
+                  inputs:
+                    secureFile: ${{ parameters.kubeconfigSecureFile }}
+
+                - bash: |
+                    set -euo pipefail
+                    command -v envsubst >/dev/null || {
+                      echo "envsubst is required on the self-hosted Linux agent."
+                      exit 1
+                    }
+                    chmod 600 "$KUBECONFIG"
+                    kubectl version --client
+                  displayName: Prepare Kubernetes access
+                  env:
+                    KUBECONFIG: $(kubeconfig.secureFilePath)
+
+                - bash: |
+                    set -euo pipefail
+                    sed -i 's/\r$//' deploy/config/development.env
+                    set -a
+                    source deploy/config/development.env
+                    set +a
+
+                    : "${NAMESPACE:?NAMESPACE must be set in development.env}"
+                    : "${GHCR_USERNAME:?ghcrUsername must be set in the variable group}"
+                    : "${GHCR_READ_TOKEN:?ghcrReadToken must be set as a secret variable}"
+
+                    kubectl delete secret ghcr-secret --namespace="$NAMESPACE" --ignore-not-found=true
+                    kubectl create secret docker-registry ghcr-secret \
+                      --namespace="$NAMESPACE" \
+                      --docker-server=ghcr.io \
+                      --docker-username="$GHCR_USERNAME" \
+                      --docker-password="$GHCR_READ_TOKEN" \
+                      --docker-email="${GHCR_USERNAME}@users.noreply.github.com"
+                  displayName: Create GHCR image pull secret
+                  env:
+                    KUBECONFIG: $(kubeconfig.secureFilePath)
+                    GHCR_USERNAME: $(ghcrUsername)
+                    GHCR_READ_TOKEN: $(ghcrReadToken)
+
+                - bash: |
+                    set -euo pipefail
+                    export ENVIRONMENT=development
+                    env_file="deploy/config/${ENVIRONMENT}.env"
+                    sed -i 's/\r$//' "$env_file"
+                    set -a
+                    source "$env_file"
+                    set +a
+
+                    export REGISTRY_URL="$(registryUrl)"
+                    if [[ '${{ parameters.skipBuild }}' == 'true' ]]; then
+                      [[ "$DEPLOY_IMAGE_TAG" =~ ^[A-Za-z0-9_.-]+$ ]] || {
+                        echo "imageTag contains invalid characters."
+                        exit 1
+                      }
+                      export IMAGE_TAG="$DEPLOY_IMAGE_TAG"
+                    else
+                      export IMAGE_TAG="sha-$(Build.SourceVersion)"
+                    fi
+                    export DATABASE_URL="sqlite:///instance/health_platform.db"
+                    export BACKEND_REPLICAS=1
+                    export CORS_ORIGINS="${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,http://frontend-svc.${NAMESPACE}.svc.cluster.local:80}"
+                    : "${JWT_SECRET:?jwtSecret must be set as a secret variable}"
+
+                    variables='$NAMESPACE $REGISTRY_URL $IMAGE_TAG $BACKEND_REPLICAS $FRONTEND_REPLICAS $BACKEND_MEMORY_REQUEST $BACKEND_CPU_REQUEST $BACKEND_MEMORY_LIMIT $BACKEND_CPU_LIMIT $FRONTEND_MEMORY_REQUEST $FRONTEND_CPU_REQUEST $FRONTEND_MEMORY_LIMIT $FRONTEND_CPU_LIMIT $FLASK_ENV $CORS_ORIGINS $DATABASE_URL $JWT_SECRET $SERVICE_TYPE'
+                    envsubst "$variables" < deploy/k8s-template.yaml | kubectl apply -f -
+
+                    kubectl rollout status deployment/backend -n "$NAMESPACE" --timeout=300s
+                    kubectl rollout status deployment/frontend -n "$NAMESPACE" --timeout=300s
+                    kubectl get pods,svc -n "$NAMESPACE"
+                  displayName: Deploy to Kubernetes
+                  env:
+                    KUBECONFIG: $(kubeconfig.secureFilePath)
+                    JWT_SECRET: $(jwtSecret)
+                    CORS_ORIGINS: $(corsOrigins)
+                    DEPLOY_IMAGE_TAG: ${{ parameters.imageTag }}
+
+                - bash: |
+                    set -euo pipefail
+                    set -a
+                    source deploy/config/development.env
+                    set +a
+
+                    address=""
+                    for attempt in {1..60}; do
+                      ip=$(kubectl get svc frontend-svc -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
+                      hostname=$(kubectl get svc frontend-svc -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
+                      address="${ip:-$hostname}"
+                      if [[ -n "$address" ]]; then
+                        break
+                      fi
+                      sleep 5
+                    done
+
+                    if [[ -z "$address" ]]; then
+                      echo "Development frontend external address is pending."
+                      exit 1
+                    fi
+
+                    development_url="http://${address}/"
+                    echo "Development URL: ${development_url}"
+                    echo "##vso[task.setvariable variable=developmentUrl;isOutput=true]${development_url}"
+                  name: exportDevelopmentUrl
+                  displayName: Export development URL
+                  env:
+                    KUBECONFIG: $(kubeconfig.secureFilePath)

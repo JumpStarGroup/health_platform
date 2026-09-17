@@ -75,7 +75,7 @@ feature/* (功能开发)
 ```
 
 ### 开发工作流：
-1. **功能开发**: `feature/xxx` → `develop`
+1. **功能开发**: `feature/<issue>-<slug>` → `develop`
 2. **集成测试**: `develop` → 自动部署到开发环境
 3. **预发布**: `develop` → `staging` → 自动部署到预发布环境
 4. **生产发布**: `staging` → `main` → 手动审批后部署到生产环境

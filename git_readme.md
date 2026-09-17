@@ -83,7 +83,7 @@ Rationale: keep the repo small, clean, and free from machine-specific or sensiti
 
 ## 5) Branching, commits, and PR hygiene
 
-- Branch strategy: GitHub Flow or trunk-based with short-lived feature branches: `feature/<scope>` or `fix/<scope>`.
+- Branch strategy: GitHub Flow or trunk-based with `docs/<issue>-<slug>`, `feature/<issue>-<slug>`, and `fix/<issue>-<slug>`. Small fixes without an Issue may use `fix/<slug>`.
 - Commit messages: follow Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`, `build:`). Include scope when useful, keep body concise and actionable.
 - Pull requests:
   - Small, focused PRs are easier to review.

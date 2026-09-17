@@ -53,10 +53,10 @@ anything reaches `main`.
 ```bash
 git checkout main
 git pull origin main
-git checkout -b release/<version>
+git checkout -b <release-type>/<version>
 ```
 
-> Use `hotfix/<version>` instead when fixing a production issue without including unreleased features.
+> Set `<release-type>` to `release` for a normal release or `hotfix` for a production fix. Reuse the selected value in every later command.
 
 ### Phase 3 — Update Release Files
 
@@ -101,7 +101,7 @@ Update **all three files** in a single commit:
 git add VERSION CHANGELOG.md docs/releases/RELEASE_NOTES_v<version>.md
 # Also stage any other files changed as part of this release
 git commit -m "chore: release v<version>"
-git push -u origin release/<version>
+git push -u origin <release-type>/<version>
 ```
 
 ### Phase 5 — Run the Release PR Guard
@@ -125,7 +125,7 @@ Resolve every error the script reports before proceeding. Common failures and fi
 ```bash
 gh pr create \
   --base main \
-  --head release/<version> \
+  --head <release-type>/<version> \
   --title "chore: release v<version>" \
   --body "## Release v<version>
 ### 变更内容
@@ -139,7 +139,7 @@ gh pr create \
 - [ ] docs/releases/RELEASE_NOTES_v<version>.md 已创建
 - [ ] release PR guard 通过（python scripts/check_release_pr.py）
 - [ ] 单元测试通过
-- [ ] 已邀请 Reviewer"
+- [ ] 已在 GitHub.com 邀请至少一名非提交者进行人工 Review"
 ```
 
 ### Phase 7 — Post-Merge Tag (after PR is merged)
@@ -149,8 +149,8 @@ After the PR is merged to `main`, remind the user to:
 ```bash
 git checkout main
 git pull origin main
-git tag v<version>
-git push origin main --tags
+git tag -a v<version> -m "Release v<version>"
+git push origin v<version>
 ```
 
 > Tag format: `v<version>`, e.g. `v1.2.0`. Must match `VERSION` file content.
@@ -163,7 +163,7 @@ After completing the PR creation, report:
 
 ```
 ✅ Release v<version> PR opened
-Branch  : release/<version>
+Branch  : <release-type>/<version>
 PR URL  : <url>
 Files changed:
   - VERSION            : <old> → <version>
@@ -171,7 +171,7 @@ Files changed:
   - docs/releases/RELEASE_NOTES_v<version>.md : created
   - <any other files>
 Guard   : python scripts/check_release_pr.py → exit 0
-Next    : Review & merge the PR, then run `git tag v<version> && git push origin main --tags`
+Next    : Review & merge the PR, then run `git tag -a v<version> -m "Release v<version>" && git push origin v<version>`
 ```
 
 ---

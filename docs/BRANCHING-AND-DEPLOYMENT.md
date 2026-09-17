@@ -7,12 +7,14 @@
 | 分支 | 用途 | 生命周期 | 部署行为 |
 |---|---|---|---|
 | `main` | 唯一集成主干，必须始终可部署 | 长期 | 合并后自动部署 staging |
-| `feature/<scope>-<desc>` | 功能开发 | PR 合并后删除 | 不自动部署 |
-| `fix/<scope>-<desc>` | 常规缺陷修复 | PR 合并后删除 | 不自动部署 |
+| `docs/<issue>-<slug>` | 复杂需求的 requirement/design/plan 协作 | PR 合并后删除 | 不自动部署 |
+| `feature/<issue>-<slug>` | 关联 Issue 的功能开发 | PR 合并后删除 | 不自动部署 |
+| `fix/<issue>-<slug>` | 关联 Issue 的常规缺陷修复 | PR 合并后删除 | 不自动部署 |
+| `fix/<slug>` | 无 Issue 的小型缺陷修复例外 | PR 合并后删除 | 不自动部署 |
 | `release/<version>` | 准备版本文件和发布说明 | 发布后删除 | 不自动部署 |
 | `hotfix/<version>` | 生产紧急修复 | 发布后删除 | 不自动部署 |
 
-分支名使用英文小写和连字符。`release/*` 与 `hotfix/*` 的版本必须为 `MAJOR.MINOR.PATCH`，例如 `release/1.2.0`。
+需求文档分支使用 `docs/<issue>-<slug>`，功能分支使用 `feature/<issue>-<slug>`，修复分支优先使用 `fix/<issue>-<slug>`。`<issue>` 是不带 `#` 的 GitHub Issue 编号，`<slug>` 使用简短的英文小写 kebab-case。无 Issue 的小型修复可以使用 `fix/<slug>`；新功能不得省略 Issue 编号。`release/*` 与 `hotfix/*` 的版本必须为 `MAJOR.MINOR.PATCH`，例如 `release/1.2.0`。
 
 ```mermaid
 flowchart LR
@@ -33,6 +35,8 @@ flowchart LR
 5. 合并后删除短期分支；优先使用 squash merge 保持主干历史清晰。
 6. `main` 合并成功会自动构建镜像，并将该提交部署到 staging。
 
+代码审查发生在 GitHub.com，是平台流程而不是本地自定义 Agent。PR 作者负责请求至少一名非提交者进行人工 Review；可以额外请求 GitHub Copilot Code Review，但其建议不能替代 required human approval。
+
 推荐的 `main` GitHub Ruleset 或 Branch Protection：
 
 | 设置 | 要求 |
@@ -40,13 +44,13 @@ flowchart LR
 | Require a pull request before merging | 启用 |
 | Required approvals | 至少 1 |
 | Dismiss stale approvals | 启用 |
-| Require status checks | `backend-tests`、`frontend-build` |
+| Require status checks | `backend-tests`、`frontend-build`、`release-pr-guard` |
 | Require branches to be up to date | 启用 |
 | Require conversation resolution | 启用 |
 | Block force pushes and deletions | 启用 |
-| Include administrators / no bypass | 建议启用 |
+| Include administrators / no bypass | 必须启用 |
 
-`release-pr-guard` 只在 `release/*` 或 `hotfix/*` PR 上运行，因此不应配置为所有 PR 的全局 required check；发布类 PR 必须等待该检查成功。
+`release-pr-guard` Job 在所有目标为 `main` 的 PR 上运行并配置为 required check。其脚本对普通 feature/fix PR 返回成功并跳过发布校验，只对 `release/*` 或 `hotfix/*` PR 执行 VERSION、CHANGELOG 和 release notes 校验。
 
 ## 自动化部署规则
 
@@ -74,7 +78,7 @@ flowchart LR
 - 工作流：`.github/workflows/release-production.yml`
 - 触发：推送 `vMAJOR.MINOR.PATCH` 标签，或手动输入同格式的已有标签。
 - 前置校验：标签提交必须可从 `origin/main` 到达；Tag、`VERSION`、`CHANGELOG.md` 和 release notes 必须一致。
-- 环境：GitHub `production` Environment，必须配置审批人和禁止自审。
+- 环境：GitHub `production` Environment，必须配置审批人、禁止自审，并禁止管理员绕过。
 - 镜像：使用版本标签构建，Kubernetes 部署同一版本标签。
 - 验证：等待 rollout 完成，再执行生产 Playwright 回归并保存测试产物。
 - 并发：生产发布不自动取消，避免部署过程被后续运行中断。

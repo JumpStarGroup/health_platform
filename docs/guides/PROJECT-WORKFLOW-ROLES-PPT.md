@@ -78,12 +78,13 @@
 
 **页面内容：**
 - Product_Manager
-- 需求审批
+- Requirement_Reviewer
 - System_Architect
 - Tech_Lead_Planner
+- Development_Readiness_Reviewer
 - Developer
 - QA / Playwright
-- Reviewer
+- GitHub PR Review（非 Agent）
 - Release_Manager
 - DevOps / CI/CD
 - Staging / Production
@@ -105,12 +106,13 @@
 | 角色 | 核心职责 | 主要产物 |
 |---|---|---|
 | Product_Manager | 澄清需求、定义价值、控制范围 | 需求文档、Issue |
-| 需求审批 | 审核范围、风险、验收标准 | 评审结论、澄清问题 |
+| Requirement_Reviewer | 只审核需求本身的范围、风险和验收标准 | 需求评审结论、澄清问题 |
 | System_Architect | 设计系统方案 | design 文档 |
 | Tech_Lead_Planner | 拆任务、定阶段、定验证 | plan 文档 |
+| Development_Readiness_Reviewer | 审核是否可以进入开发 | 就绪结论、阻塞项、stage 转换 |
 | Developer | 编码、测试、联调、提交 PR | 代码、测试、PR |
 | QA / Playwright | 设计与维护 E2E | 测试计划、E2E 用例 |
-| Reviewer | 代码审查 | Review 结论 |
+| GitHub PR Review（非 Agent） | GitHub.com 人工审查 + CI 门禁 | approval、Review 评论、合并决定 |
 | Release_Manager | 版本发布准备 | VERSION、CHANGELOG、Release Notes |
 | DevOps / CI/CD | 构建、部署、回归 | 流水线、环境、报告 |
 
@@ -126,23 +128,24 @@
 **页面内容：**
 - 先确认问题是什么，再谈怎么做
 - 创建或关联 GitHub Issue
-- 输出需求文档 `req-*.md`
-- 需求文档只讲 What / Why / 范围 / 验收
+- 简单需求直接在 Issue 中形成可验收需求
+- 复杂需求输出 `req-*.md`
+- Issue 或需求文档只讲 What / Why / 范围 / 验收
 - 不讨论数据库、API 实现细节
 
 **关键规范：**
-- 需求阶段使用 `docs/<issue>-<slug>` 文档协作分支
-- docs PR 只用 `Refs #<issue>`
-- 不直接在 `main` 上写需求文档
+- 只有复杂需求使用 `docs/<issue>-<slug>` 文档协作分支
+- 复杂需求的 docs PR 只用 `Refs #<issue>`
+- 简单需求不需要 docs 分支或 docs-only PR
 
 **建议图示：**
 - 需求澄清流程：问题 → Issue → 需求文档 → 审核
 
 ---
 
-## Slide 6 需求审批：为什么要先审需求
+## Slide 6 Requirement Review：为什么要先审需求
 
-**目标：** 让新人理解需求审批不是“走形式”，而是风险前移。
+**目标：** 让新人理解 Requirement_Reviewer 只审核需求本身，开发就绪由独立门禁决定。
 
 **页面内容：**
 - 检查目标是否清楚
@@ -150,6 +153,7 @@
 - 检查验收标准是否可测试
 - 检查风险、依赖、回滚是否有说明
 - 阻塞项不通过，需退回修订
+- 该角色不设置 `stage:reviewed`
 
 **建议图示：**
 - 一个“通过 / 有条件通过 / 退回修订”的决策树
@@ -182,16 +186,22 @@
 
 **页面内容：**
 - 不在需求刚开始时就创建 feature 分支
-- 等需求、设计、计划批准后，再进入实现
-- 统一从最新 `main` 创建 `feature/<scope>-<desc>` 或 `fix/<scope>-<desc>`
+- 简单需求和复杂需求都必须通过 Development_Readiness_Reviewer
+- 复杂需求必须先批准并合入 requirement/design/plan
+- Issue 达到 `stage:reviewed` 后，再进入实现
+- 统一从最新 `main` 创建 `feature/<issue>-<slug>` 或 `fix/<issue>-<slug>`
+- 无 Issue 的小型修复允许使用 `fix/<slug>`；新功能必须包含 Issue 编号
 - 这样 feature 分支天然包含已批准文档
 
 **建议图示：**
 ```mermaid
 flowchart LR
     A[docs 分支完成需求/设计/计划] --> B[docs PR 合入 main]
-    B --> C[Developer 从最新 main 创建 feature/fix]
-    C --> D[开始编码]
+    B --> C[Development_Readiness_Reviewer]
+    C --> D{stage:reviewed?}
+    D -- 否 --> A
+    D -- 是 --> E[Developer 从最新 main 创建 feature/fix]
+    E --> F[开始编码并设置 stage:developed]
 ```
 
 **一句话总结：**
@@ -204,7 +214,7 @@ flowchart LR
 **目标：** 让新人知道开发阶段的标准动作。
 
 **页面内容：**
-- 读取 plan
+- 简单需求读取批准后的 Issue；复杂需求读取 requirement/design/plan
 - 写测试，再写代码
 - 本地验证
 - 三终端模型：
@@ -213,11 +223,15 @@ flowchart LR
   - Terminal 3：测试 / Git / 一次性命令
 - 提交代码
 - 创建 PR 到 `main`
+- 在 GitHub.com 请求至少一名非提交者人工 Review
+- 等待 required checks 和人工 approval，并解决所有 Review conversation
 - 合并后清理分支
 
 **关键规范：**
 - 使用 Conventional Commits
 - PR 里写清背景、变更、测试证据、风险
+- GitHub Copilot Code Review 可选，但不能替代人工 approval
+- PR 作者和自动化不得绕过 Ruleset 或自行批准
 - feature PR 只有在完全满足验收标准时才可用 `Closes/Fixes`
 
 ---
@@ -230,7 +244,8 @@ flowchart LR
 | PR 类型 | 推荐关联方式 | 是否关闭 Issue |
 |---|---|---|
 | docs PR | `Refs #123` | 否 |
-| feature/fix PR | `Closes #123` / `Fixes #123` 或 `Refs #123` | 视情况 |
+| feature PR | `Closes #123` 或 `Refs #123` | 视情况 |
+| fix PR | `Fixes #123` / `Refs #123`；无 Issue 时不使用关联关键字 | 视情况 |
 | release PR | `Refs #123` | 否 |
 | follow-up PR | `Refs #123` | 否 |
 
@@ -249,6 +264,8 @@ flowchart LR
 - 单元测试：Pytest
 - UI 回归：Playwright E2E
 - PR 校验：后端测试 + 前端 build
+- GitHub.com 人工门禁：至少一名非提交者 approval
+- 所有 Review conversation 必须解决
 - 发布校验：版本文件、变更日志、发布说明
 - 生产发布后自动回归
 
@@ -290,8 +307,9 @@ flowchart LR
 |---|---|
 | `main` | 稳定主干 |
 | `docs/<issue>-<slug>` | 需求/设计/计划协作 |
-| `feature/<scope>-<desc>` | 新功能开发 |
-| `fix/<scope>-<desc>` | 缺陷修复 |
+| `feature/<issue>-<slug>` | 关联 Issue 的新功能开发 |
+| `fix/<issue>-<slug>` | 关联 Issue 的缺陷修复 |
+| `fix/<slug>` | 无 Issue 的小型缺陷修复例外 |
 | `release/<version>` | 发版准备 |
 | `hotfix/<version>` | 紧急修复 |
 
@@ -339,12 +357,13 @@ flowchart LR
 
 ### 4.1 角色分工短句
 - Product_Manager：定义问题和价值
-- 需求审批：控制范围和风险
+- Requirement_Reviewer：审核需求本身
 - System_Architect：定义系统如何做
 - Tech_Lead_Planner：拆成能执行的任务
+- Development_Readiness_Reviewer：决定是否允许进入开发
 - Developer：实现并验证
 - QA：补齐关键路径回归
-- Reviewer：把关代码质量
+- GitHub PR Review：至少一名非提交者人工审批；Copilot Review 仅作辅助
 - Release_Manager：把功能变成可发布版本
 - DevOps / CI/CD：把发布流程自动化
 
