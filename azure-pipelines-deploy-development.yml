@@ -169,7 +169,11 @@ stages:
 
                     export REGISTRY_URL="$(registryUrl)"
                     if [[ '${{ parameters.skipBuild }}' == 'true' ]]; then
-                      export IMAGE_TAG='${{ parameters.imageTag }}'
+                      [[ "$DEPLOY_IMAGE_TAG" =~ ^[A-Za-z0-9_.-]+$ ]] || {
+                        echo "imageTag contains invalid characters."
+                        exit 1
+                      }
+                      export IMAGE_TAG="$DEPLOY_IMAGE_TAG"
                     else
                       export IMAGE_TAG="sha-$(Build.SourceVersion)"
                     fi
@@ -189,6 +193,7 @@ stages:
                     KUBECONFIG: $(kubeconfig.secureFilePath)
                     JWT_SECRET: $(jwtSecret)
                     CORS_ORIGINS: $(corsOrigins)
+                    DEPLOY_IMAGE_TAG: ${{ parameters.imageTag }}
 
                 - bash: |
                     set -euo pipefail
