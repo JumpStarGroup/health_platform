@@ -17,11 +17,11 @@ tools: ['edit', 'execute/runNotebookCell', 'read/getNotebookSummary', 'read/read
 ## Workflow
 0.  **Classification & Readiness Gate**:
   - Read the GitHub Issue and verify the existing Product_Manager-assigned label is exactly one of `complexity:simple` or `complexity:complex`; do not reclassify it.
-  - Do not begin implementation until the issue is at `stage:ready-for-development`.
+  - Do not begin implementation until the issue is at `stage:reviewed`.
   - Confirm Development_Readiness_Reviewer produced a `ready` decision; do not infer readiness from requirement, design, or plan approval alone.
   - If `complexity:simple`, the approved Issue is the requirement source of truth. Implementation can proceed only when the issue passes the review gate and the acceptance criteria are clear.
   - If `complexity:complex`, the requirements/design/plan docs must be approved and available on `main` before implementation begins, and the issue must not contain contradictions with those docs.
-  - As the transition owner, move the issue to `stage:in-development` only when implementation actually starts.
+  - As the transition owner, move the issue to `stage:developed` only when implementation actually starts.
   - Do not implement directly on `main` or on a `docs/*` branch.
 1.  **Branch Setup**:
     - Ensure the relevant requirement artifacts are on the latest `main`; normally this means the docs-only PR has already merged for complex work.

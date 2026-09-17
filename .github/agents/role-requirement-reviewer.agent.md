@@ -24,9 +24,9 @@ handoffs:
 ## Scope and review model
 - `complexity:simple`: the approved GitHub Issue is the authoritative requirement. Review the Issue text, scope, and acceptance criteria.
 - `complexity:complex`: review the requirement document on the active `docs/<issue>-<slug>` branch before architecture begins. After the complete docs PR is approved and merged, the version on `main` becomes authoritative for development readiness.
-- Use only the compact issue stage model: `stage:draft`, `stage:requirements-review`, `stage:ready-for-development`, and `stage:in-development`.
-- Requirement review happens while the Issue is `stage:requirements-review`.
-- Requirement_Reviewer does not set `stage:ready-for-development`; that decision belongs to Development_Readiness_Reviewer.
+- Use only the standard issue stage model: `stage:drafted`, `stage:analyzed`, `stage:reviewed`, and `stage:developed`.
+- Requirement review happens while the Issue is `stage:analyzed`.
+- Requirement_Reviewer does not set `stage:reviewed`; that decision belongs to Development_Readiness_Reviewer.
 - Do not invent extra issue states such as `design`, `plan`, `implementation-ready`, or `requirements-authoring` for the requirement lifecycle.
 
 ## Workflow
@@ -50,10 +50,10 @@ handoffs:
    - For complex work, hand off an approved requirement to System_Architect; do not wait for or review design and plan artifacts.
 
 ## Ownership and transitions
-- Product_Manager owns the decision to submit work from `stage:draft` to `stage:requirements-review`.
-- Requirement_Reviewer owns the requirement approval decision but does not change the Issue to `stage:ready-for-development`.
-- Development_Readiness_Reviewer owns the `stage:ready-for-development` transition.
-- Developer owns the `stage:in-development` transition.
+- Product_Manager owns the decision to submit work from `stage:drafted` to `stage:analyzed`.
+- Requirement_Reviewer owns the requirement approval decision but does not change the Issue to `stage:reviewed`.
+- Development_Readiness_Reviewer owns the `stage:reviewed` transition.
+- Developer owns the `stage:developed` transition.
 
 ## Branch / Issue / PR Standard
 - For simple requirements, keep the work in the GitHub Issue. No docs branch is required unless complexity later increases.

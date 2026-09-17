@@ -153,7 +153,7 @@
 - 检查验收标准是否可测试
 - 检查风险、依赖、回滚是否有说明
 - 阻塞项不通过，需退回修订
-- 该角色不设置 `stage:ready-for-development`
+- 该角色不设置 `stage:reviewed`
 
 **建议图示：**
 - 一个“通过 / 有条件通过 / 退回修订”的决策树
@@ -188,7 +188,7 @@
 - 不在需求刚开始时就创建 feature 分支
 - 简单需求和复杂需求都必须通过 Development_Readiness_Reviewer
 - 复杂需求必须先批准并合入 requirement/design/plan
-- Issue 达到 `stage:ready-for-development` 后，再进入实现
+- Issue 达到 `stage:reviewed` 后，再进入实现
 - 统一从最新 `main` 创建 `feature/<issue>-<slug>` 或 `fix/<issue>-<slug>`
 - 无 Issue 的小型修复允许使用 `fix/<slug>`；新功能必须包含 Issue 编号
 - 这样 feature 分支天然包含已批准文档
@@ -198,10 +198,10 @@
 flowchart LR
     A[docs 分支完成需求/设计/计划] --> B[docs PR 合入 main]
     B --> C[Development_Readiness_Reviewer]
-    C --> D{stage:ready-for-development?}
+    C --> D{stage:reviewed?}
     D -- 否 --> A
     D -- 是 --> E[Developer 从最新 main 创建 feature/fix]
-    E --> F[开始编码并设置 stage:in-development]
+    E --> F[开始编码并设置 stage:developed]
 ```
 
 **一句话总结：**

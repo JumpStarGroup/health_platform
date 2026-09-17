@@ -41,7 +41,7 @@ flowchart LR
 | 角色 | 主要职责 | 关键产出 | 责任边界 |
 |---|---|---|---|
 | **Product_Manager** | 澄清业务问题、定义用户价值、确定范围与验收标准，并关联 GitHub Issue | 简单需求的 Issue，或复杂需求的 `req-*.md` | 只定义 What 和 Why，不讨论数据库表、API 实现等技术细节 |
-| **Requirement_Reviewer** | 审核需求本身的清晰度、范围、风险和验收标准 | 需求审批结论、澄清问题、风险清单 | 不审核 design/plan 的开发就绪性，不修改为 `stage:ready-for-development` |
+| **Requirement_Reviewer** | 审核需求本身的清晰度、范围、风险和验收标准 | 需求审批结论、澄清问题、风险清单 | 不审核 design/plan 的开发就绪性，不修改为 `stage:reviewed` |
 | **System_Architect** | 根据需求进行系统设计，识别数据库、API、后端、前端、测试影响面 | 技术设计文档 (`design-*.md`) | 关注结构、接口、边界和可行性，不直接写实现代码 |
 | **Tech_Lead_Planner** | 把设计拆成可执行、可测试、按依赖排序的开发任务 | 实施计划 (`plan-*.md`)、阶段验收步骤 | 保证任务足够细，能交给 Developer 执行 |
 | **Development_Readiness_Reviewer** | 在开发前审核 Issue 及适用的 requirement/design/plan | 就绪结论、阻塞项、stage 转换 | 是进入开发的唯一门禁，不替代需求、设计、计划或代码评审 |
@@ -59,24 +59,24 @@ flowchart LR
 
 - `complexity:simple`: 需求可以直接用 GitHub Issue 描述，验收标准清晰，不需要正式 req/design/plan 文档。
 - `complexity:complex`: 需求需要独立的 requirement/design/plan 文档，并在 docs 分支中协作评审。
-- `stage:draft`: 需求刚被提出或仍在澄清中。
-- `stage:requirements-review`: 需求和复杂需求文档处于开发前准备或评审过程。
-- `stage:ready-for-development`: 需求已通过开发前门禁，允许进入实现。
-- `stage:in-development`: 已正式开始编码。
+- `stage:drafted`: 需求刚被提出或仍在澄清中。
+- `stage:analyzed`: 需求和复杂需求文档处于开发前准备或评审过程。
+- `stage:reviewed`: 需求已通过开发前门禁，允许进入实现。
+- `stage:developed`: 已正式开始编码。
 
 责任边界指“谁有权决定并触发 stage 转换”，而不是某角色负责该 stage 期间的全部工作：
 
 | Stage 转换 | 决策角色 |
 |---|---|
-| `stage:draft` → `stage:requirements-review` | Product_Manager |
-| `stage:requirements-review` → `stage:ready-for-development` | Development_Readiness_Reviewer |
-| `stage:ready-for-development` → `stage:in-development` | Developer |
+| `stage:drafted` → `stage:analyzed` | Product_Manager |
+| `stage:analyzed` → `stage:reviewed` | Development_Readiness_Reviewer |
+| `stage:reviewed` → `stage:developed` | Developer |
 
-Requirement_Reviewer 负责需求本身的审批结论，但不负责设置 `stage:ready-for-development`。System_Architect 和 Tech_Lead_Planner 形成复杂需求的设计与计划，也不修改 stage。具体 label 操作可以由确定性脚本或客户端命令执行，但必须依据对应角色作出的转换决定。
+Requirement_Reviewer 负责需求本身的审批结论，但不负责设置 `stage:reviewed`。System_Architect 和 Tech_Lead_Planner 形成复杂需求的设计与计划，也不修改 stage。具体 label 操作可以由确定性脚本或客户端命令执行，但必须依据对应角色作出的转换决定。
 
 建议只保留这四个 issue stage，避免出现 `design`、`plan`、`implementation-ready` 等不对应明确职责的状态。设计/计划是文档活动，不应当作为 issue stage 过度扩张；状态必须和谁负责更新保持一致。
 
-> 关键约束：在进入 `stage:in-development` 之前，Issue 必须已经达到 `stage:ready-for-development`。只有 Development_Readiness_Reviewer 可以作出该就绪决定。对于复杂需求，它必须确认 requirement/design/plan 文档已存在、已按流程批准、内容和 Issue 一致且互不矛盾。
+> 关键约束：在进入 `stage:developed` 之前，Issue 必须已经达到 `stage:reviewed`。只有 Development_Readiness_Reviewer 可以作出该就绪决定。对于复杂需求，它必须确认 requirement/design/plan 文档已存在、已按流程批准、内容和 Issue 一致且互不矛盾。
 
 ---
 
@@ -96,7 +96,7 @@ flowchart TD
     F -- complex --> H[创建 docs 分支并编写 req 文档]
     G --> I[用户确认]
     H --> I
-    I --> J[设置 stage:requirements-review]
+    I --> J[设置 stage:analyzed]
     J --> K[交给 Requirement_Reviewer]
 ```
 
@@ -227,20 +227,20 @@ Issue 只保留最小状态模型：
 
 | issue stage | 含义 | 转换决策人 |
 |---|---|---|
-| `stage:draft` | 新需求还在收集和澄清 | Product_Manager 创建或保持 |
-| `stage:requirements-review` | 需求和复杂需求文档处于开发前准备或评审过程 | Product_Manager 提交评审时进入 |
-| `stage:ready-for-development` | 开发前门禁通过，允许开始实现 | Development_Readiness_Reviewer |
-| `stage:in-development` | 代码已开始开发 | Developer |
+| `stage:drafted` | 新需求还在收集和澄清 | Product_Manager 创建或保持 |
+| `stage:analyzed` | 需求和复杂需求文档处于开发前准备或评审过程 | Product_Manager 提交评审时进入 |
+| `stage:reviewed` | 开发前门禁通过，允许开始实现 | Development_Readiness_Reviewer |
+| `stage:developed` | 代码已开始开发 | Developer |
 
 审核拆为两个明确职责：
 
-1. Requirement_Reviewer 只审核需求本身。简单需求通过后交给开发前就绪审核；复杂需求通过后进入设计和计划，但仍保持 `stage:requirements-review`。
+1. Requirement_Reviewer 只审核需求本身。简单需求通过后交给开发前就绪审核；复杂需求通过后进入设计和计划，但仍保持 `stage:analyzed`。
 2. Development_Readiness_Reviewer 是进入开发的唯一门禁：
 
    - 对于 `complexity:simple`，确认需求评审已通过、无阻塞项，Issue 稳定、可验收且可测试；
    - 对于 `complexity:complex`，确认 requirement/design/plan 已齐备并批准，且与 Issue 互相一致、没有矛盾；
-   - 审核不通过时保持 `stage:requirements-review`，明确列出阻塞项、证据、责任人和下一步；
-   - 审核通过后才设置 `stage:ready-for-development`。
+   - 审核不通过时保持 `stage:analyzed`，明确列出阻塞项、证据、责任人和下一步；
+   - 审核通过后才设置 `stage:reviewed`。
 
 ### 6.5.2 为什么不直接在 main 上写需求文档
 
@@ -263,7 +263,7 @@ flowchart TD
     J --> K[Development_Readiness_Reviewer 执行开发前门禁]
     K --> L{是否 ready?}
     L -- 否 --> I
-    L -- 是 --> M[设置 stage:ready-for-development]
+    L -- 是 --> M[设置 stage:reviewed]
     M --> N[Developer 从最新 main 创建 feature/fix 分支]
 ```
 
@@ -294,8 +294,8 @@ gitGraph
 |---|---|---|---|---|
 | `docs/<issue>-<slug>` | PM 开始形成可落库需求文档时 | Product_Manager | `main` | requirements/design/plan 文档 |
 | `docs/<issue>-<slug>` | 需求还不稳定但需要多人协作时 | Product_Manager 或需求审批负责人 | `main` | 草案、评审记录、方案候选 |
-| `feature/<issue>-<slug>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 代码、测试、必要文档更新 |
-| `fix/<issue>-<slug>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 修复代码、回归测试、必要文档更新 |
+| `feature/<issue>-<slug>` | Issue 已达到 `stage:reviewed` | Developer | `main` | 代码、测试、必要文档更新 |
+| `fix/<issue>-<slug>` | Issue 已达到 `stage:reviewed` | Developer | `main` | 修复代码、回归测试、必要文档更新 |
 | `fix/<slug>` | 无关联 Issue 的小型缺陷修复 | Developer | `main` | 修复代码、回归测试、必要文档更新 |
 
 
@@ -320,7 +320,7 @@ Issue 在问题达到“值得持续跟踪”的最小信息量后创建；docs 
 
 - Issue 已形成可验收 AC；
 - 关键范围和非范围已经明确；
-- Development_Readiness_Reviewer 已将 Issue 设置为 `stage:ready-for-development`；
+- Development_Readiness_Reviewer 已将 Issue 设置为 `stage:reviewed`；
 - 有明确 Developer 接手实现。
 
 `complexity:complex` 还必须满足：
@@ -354,7 +354,7 @@ git checkout -b feature/<issue>-<slug>
 flowchart LR
     A[Issue 中补充轻量需求与 AC] --> B[Requirement_Reviewer]
     B --> C[Development_Readiness_Reviewer]
-    C --> D{stage:ready-for-development?}
+    C --> D{stage:reviewed?}
     D -- 否 --> A
     D -- 是 --> E[从 main 创建 feature/fix 分支]
     E --> F[编码与测试]
@@ -723,7 +723,7 @@ sequenceDiagram
         TL->>DRR: 提交 Issue + requirement/design/plan
     end
     DRR->>DRR: 审核齐备性、一致性和阻塞项
-    DRR->>DEV: ready，设置 stage:ready-for-development
+    DRR->>DEV: ready，设置 stage:reviewed
     DEV->>DEV: 创建 feature 分支
     DEV->>DEV: 编码 + 单元测试
     DEV->>DEV: 三终端联调验证
@@ -793,7 +793,7 @@ gitGraph
 - [ ] 需求已同步 GitHub Issue
 - [ ] Requirement_Reviewer 已通过需求本身
 - [ ] Development_Readiness_Reviewer 已确认无未解决阻塞项
-- [ ] Issue 已设置为 `stage:ready-for-development`
+- [ ] Issue 已设置为 `stage:reviewed`
 
 ### Developer 开始前
 

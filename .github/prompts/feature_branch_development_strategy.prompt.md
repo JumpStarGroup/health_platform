@@ -51,9 +51,9 @@ agent: agent
 0. **确认开发前门禁**
    - 读取关联 GitHub Issue。
    - 如果需求尚未完成 Requirement_Reviewer 审核，停止分支创建并先提交需求评审。
-   - 只有 Development_Readiness_Reviewer 可以把 Issue 设置为 `stage:ready-for-development`。
-   - Issue 未达到 `stage:ready-for-development` 时，不得创建功能分支或开始编码。
-   - Developer 实际开始实现时，才把 Issue 更新为 `stage:in-development`。
+   - 只有 Development_Readiness_Reviewer 可以把 Issue 设置为 `stage:reviewed`。
+   - Issue 未达到 `stage:reviewed` 时，不得创建功能分支或开始编码。
+   - Developer 实际开始实现时，才把 Issue 更新为 `stage:developed`。
 
 1. **确认当前分支与同步主干**
    - 命令示例（由人类在 Terminal 3 执行）：
@@ -166,7 +166,7 @@ agent: agent
 ## 四、Agent 在本 Prompt 下的行为要求
 
 1. 当用户请求“开发一个新功能 / 模块 / API / 页面”时：
-   - 先确认 Issue 已由 Development_Readiness_Reviewer 设置为 `stage:ready-for-development`。
+   - 先确认 Issue 已由 Development_Readiness_Reviewer 设置为 `stage:reviewed`。
    - 只有 Developer 可以在门禁通过后，从最新 `main` 创建 `feature/*` 或 `fix/*` 分支。
    - 如果门禁尚未通过，停止开发流程并交回对应审核角色；不得提示绕过门禁创建分支。
    - 基于本文件的策略，给出**分支命名建议**和**最小实现计划**（后端/前端/测试）。

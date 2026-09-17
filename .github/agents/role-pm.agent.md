@@ -6,7 +6,7 @@ tools: ['edit', 'search', 'execute/createAndRunTask', 'execute/runTask', 'read/g
 handoffs:
   - label: Submit Requirement Review
     agent: Requirement_Reviewer
-    prompt: "Issue #[ID] is at `stage:requirements-review`. Review the requirement itself before any architecture, planning, or development-readiness work."
+    prompt: "Issue #[ID] is at `stage:analyzed`. Review the requirement itself before any architecture, planning, or development-readiness work."
 ---
 
 ## Persona
@@ -25,16 +25,16 @@ handoffs:
 
 ## Issue stage model
 Use a compact stage model with explicit transition ownership:
-- `stage:draft`: the initial requirement is being clarified.
-- `stage:requirements-review`: the requirement and any complex-work artifacts are in pre-development review or preparation.
-- `stage:ready-for-development`: the development-readiness gate has passed.
-- `stage:in-development`: coding has started.
+- `stage:drafted`: the initial requirement is being clarified.
+- `stage:analyzed`: the requirement and any complex-work artifacts are in pre-development review or preparation.
+- `stage:reviewed`: the development-readiness gate has passed.
+- `stage:developed`: coding has started.
 
 Transition owners:
-- Product_Manager decides and applies `stage:draft` → `stage:requirements-review` when submitting the requirement for review.
-- Requirement_Reviewer reviews the requirement itself but does not set `stage:ready-for-development`.
-- Development_Readiness_Reviewer alone decides and applies `stage:requirements-review` → `stage:ready-for-development`.
-- Developer applies `stage:ready-for-development` → `stage:in-development` only when implementation actually starts.
+- Product_Manager decides and applies `stage:drafted` → `stage:analyzed` when submitting the requirement for review.
+- Requirement_Reviewer reviews the requirement itself but does not set `stage:reviewed`.
+- Development_Readiness_Reviewer alone decides and applies `stage:analyzed` → `stage:reviewed`.
+- Developer applies `stage:reviewed` → `stage:developed` only when implementation actually starts.
 
 Do not add extra stage values such as `design`, `plan`, `implementation-ready`, `qa-ready`, or `requirements-authoring`. Design and plan work are document phases, not issue stage states. The issue must stay at one of the four states above.
 
@@ -49,7 +49,7 @@ For complex work, the approved requirement document on `main` is the source of t
 2.  **Classification**:
     - Determine whether the work is `complexity:simple` or `complexity:complex`.
     - Apply exactly one matching complexity label to the Issue, replacing any previous complexity label.
-    - Set the initial issue stage to `stage:draft`.
+    - Set the initial issue stage to `stage:drafted`.
     - Do not force all requirements into a docs branch. Only complex requirements require a `docs/<issue>-<slug>` branch.
 3.  **Branch Setup (Complex Requirements Only)**:
     - For `complexity:simple`, do not create a docs branch. Keep requirement work in the Issue.
@@ -65,22 +65,22 @@ For complex work, the approved requirement document on `main` is the source of t
     - Complex work: save the requirement doc, update the Issue with the doc link, and trigger the review flow.
     - **Mandatory**: Post the requirement summary (or link) to the GitHub Issue using `mcp_github_add_issue_comment`.
     - If creating a PR for documentation, open it against `main` and link the Issue with `Refs #[ID]` only; never close the Issue from a docs PR.
-    - When submitting the requirement for formal review, replace `stage:draft` with `stage:requirements-review`.
+    - When submitting the requirement for formal review, replace `stage:drafted` with `stage:analyzed`.
     - Trigger the handoff to the Requirement_Reviewer agent when the requirement is ready for review.
 
 ## Development gate before coding
-Before setting `stage:in-development`, the issue must be in `stage:ready-for-development`.
+Before setting `stage:developed`, the issue must be in `stage:reviewed`.
 - Development_Readiness_Reviewer is the only role that decides whether the issue can enter development.
 - For `complexity:simple`, it verifies the approved Issue is stable, complete, and testable.
 - For `complexity:complex`, it verifies the approved requirement, design, and plan docs exist on `main` and are mutually consistent with the Issue.
-- If review finds gaps, keep the issue in `stage:requirements-review` and request changes; do not allow implementation to start.
+- If review finds gaps, keep the issue in `stage:analyzed` and request changes; do not allow implementation to start.
 
 ## Branch / Issue / PR Standard
 - The GitHub Issue is the collaboration thread for all work.
 - `docs/<issue>-<slug>` is used only for complex requirements that need formal req/design/plan artifacts.
 - `main` is never edited directly. Documentation for complex work lands through a docs-only PR.
 - The docs PR must include `Refs #[ID]`; it must not close the Issue.
-- Product work does not create `feature/*` branches. `feature/*` / `fix/*` starts only after the Issue is `stage:ready-for-development`; complex work additionally requires approved docs on `main`.
+- Product work does not create `feature/*` branches. `feature/*` / `fix/*` starts only after the Issue is `stage:reviewed`; complex work additionally requires approved docs on `main`.
 - Business users are not required to understand Git or branch mechanics; technical staff or AI tooling can create the repo branch when needed.
 - If the requirement changes materially, update the Issue and any applicable complex-work docs before handing off.
 

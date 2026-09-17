@@ -38,7 +38,7 @@ handoffs:
    - Ensure the requirement, design, and plan artifacts are linked from the Issue.
    - Confirm the docs-only PR is approved and merged into `main`; do not request readiness review before this is complete.
    - Submit the completed artifact set to Development_Readiness_Reviewer.
-   - Do not set `stage:ready-for-development` or hand off directly to Developer.
+   - Do not set `stage:reviewed` or hand off directly to Developer.
 
 ## Branch / Issue / PR Standard
 - Planning stays on the docs branch until documentation is approved for `complexity:complex` work.
