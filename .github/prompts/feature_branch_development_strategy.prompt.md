@@ -14,16 +14,20 @@ agent: agent
 
 2. **功能分支 (`feature/*`)**：
    - 用于新增功能或较大改动的开发。
-   - 命名建议：`feature/<short-kebab-or-snake-name>`，例如：
-     - `feature/health-trend-dashboard`
-     - `feature/member-tag-filtering`
+   - 命名规则：`feature/<issue>-<slug>`，例如：
+     - `feature/123-health-trend-dashboard`
+     - `feature/456-member-tag-filtering`
+   - `<issue>` 是不带 `#` 的 GitHub Issue 编号，功能分支不得省略。
 
 3. **修复分支 (`fix/*`)**：
    - 用于 Bug 修复。
-   - 命名建议：`fix/<issue-or-bug-desc>`，例如：
-     - `fix/bp-validation-limits`
+   - 有关联 Issue 时使用 `fix/<issue>-<slug>`，例如 `fix/789-bp-validation-limits`。
+   - 无 Issue 的小型修复可以使用 `fix/<slug>`，例如 `fix/login-copy-typo`。
 
-4. （可选增强）环境分支：
+4. **需求文档分支 (`docs/*`)**：
+   - 复杂需求的 requirement/design/plan 使用 `docs/<issue>-<slug>`，例如 `docs/123-health-trend-dashboard`。
+
+5. （可选增强）环境分支：
    - 当团队/CI 需要时，可启用：
      - `develop`：集成开发分支
      - `staging`：预发布分支
@@ -60,12 +64,12 @@ agent: agent
      ```
 
 2. **创建功能分支**
-   - 与用户一起根据功能简要描述生成分支名，例如：`feature/health-trend-dashboard`。
+   - 根据关联 Issue 编号和简短描述生成分支名，例如：`feature/123-health-trend-dashboard`。
    - 命令示例：
 
      ```cmd
-     git checkout -b feature/<short-feature-name>
-     git push -u origin feature/<short-feature-name>
+     git checkout -b feature/<issue>-<slug>
+     git push -u origin feature/<issue>-<slug>
      ```
 
 3. **设计实现方案（最少包含以下内容）**
@@ -120,8 +124,8 @@ agent: agent
    - 合并后删除远程功能分支：
 
      ```cmd
-     git branch -d feature/<short-feature-name>
-     git push origin --delete feature/<short-feature-name>
+     git branch -d feature/<issue>-<slug>
+     git push origin --delete feature/<issue>-<slug>
      ```
 
 ## 三、新版本发布策略（与功能开发配套）

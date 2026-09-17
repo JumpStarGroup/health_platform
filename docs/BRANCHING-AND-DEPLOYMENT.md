@@ -7,12 +7,14 @@
 | 分支 | 用途 | 生命周期 | 部署行为 |
 |---|---|---|---|
 | `main` | 唯一集成主干，必须始终可部署 | 长期 | 合并后自动部署 staging |
-| `feature/<scope>-<desc>` | 功能开发 | PR 合并后删除 | 不自动部署 |
-| `fix/<scope>-<desc>` | 常规缺陷修复 | PR 合并后删除 | 不自动部署 |
+| `docs/<issue>-<slug>` | 复杂需求的 requirement/design/plan 协作 | PR 合并后删除 | 不自动部署 |
+| `feature/<issue>-<slug>` | 关联 Issue 的功能开发 | PR 合并后删除 | 不自动部署 |
+| `fix/<issue>-<slug>` | 关联 Issue 的常规缺陷修复 | PR 合并后删除 | 不自动部署 |
+| `fix/<slug>` | 无 Issue 的小型缺陷修复例外 | PR 合并后删除 | 不自动部署 |
 | `release/<version>` | 准备版本文件和发布说明 | 发布后删除 | 不自动部署 |
 | `hotfix/<version>` | 生产紧急修复 | 发布后删除 | 不自动部署 |
 
-分支名使用英文小写和连字符。`release/*` 与 `hotfix/*` 的版本必须为 `MAJOR.MINOR.PATCH`，例如 `release/1.2.0`。
+需求文档分支使用 `docs/<issue>-<slug>`，功能分支使用 `feature/<issue>-<slug>`，修复分支优先使用 `fix/<issue>-<slug>`。`<issue>` 是不带 `#` 的 GitHub Issue 编号，`<slug>` 使用简短的英文小写 kebab-case。无 Issue 的小型修复可以使用 `fix/<slug>`；新功能不得省略 Issue 编号。`release/*` 与 `hotfix/*` 的版本必须为 `MAJOR.MINOR.PATCH`，例如 `release/1.2.0`。
 
 ```mermaid
 flowchart LR

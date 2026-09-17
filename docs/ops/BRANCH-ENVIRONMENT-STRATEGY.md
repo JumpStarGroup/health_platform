@@ -185,7 +185,7 @@ feature/* (feature development)
 ```
 
 ### Deployment Flow:
-1. **Feature Development**: `feature/xxx` → `develop`
+1. **Feature Development**: `feature/<issue>-<slug>` → `develop`
 2. **Integration Testing**: `develop` → Auto-deploy to Dev environment
 3. **Pre-production**: `develop` → `staging` → Auto-deploy to Staging
 4. **Production**: `staging` → `main` → Auto-deploy to Production (with approval)
@@ -281,7 +281,7 @@ develop ← merge back
 ```
 develop
   ↓
-feature/new-dashboard → Develop locally, no auto-deploy
+feature/123-new-dashboard → Develop locally, no auto-deploy
   ↓
 develop (PR merged) → Auto-deploy to dev
   ↓

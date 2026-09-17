@@ -121,13 +121,16 @@ VERSION 文件
 本仓库默认采用轻量 trunk 流，`main` 始终保持可部署状态。
 
 - `main`：主干分支，所有功能最终合并到这里。
-- `feature/<scope>-<desc>`：新功能开发分支，例如 `feature/health-import-ui`。
-- `fix/<scope>-<desc>`：缺陷修复分支，例如 `fix/login-token-refresh`。
+- `docs/<issue>-<slug>`：复杂需求的需求、设计和计划文档分支，例如 `docs/123-health-import`。
+- `feature/<issue>-<slug>`：关联 Issue 的新功能开发分支，例如 `feature/123-health-import-ui`。
+- `fix/<issue>-<slug>`：关联 Issue 的缺陷修复分支，例如 `fix/456-login-token-refresh`。
+- `fix/<slug>`：无 Issue 的小型缺陷修复例外，例如 `fix/login-copy-typo`。
 - `release/<version>`：短期发布分支，仅在需要更长回归周期时临时使用。
 - `hotfix/<version>`：线上紧急修复分支，仅用于生产问题快速修复。
 
 约定：
-- 分支名称尽量短、语义明确，优先使用英文小写和连字符。
+- `<issue>` 使用不带 `#` 的 GitHub Issue 编号，`<slug>` 使用简短的英文小写 kebab-case。
+- 新功能必须关联 Issue；缺陷修复优先关联 Issue，仅无 Issue 的小型修复允许省略 Issue 编号。
 - 默认不长期维护 `develop`、`staging` 等环境分支，除非团队明确需要更复杂的发布链路。
 - 所有功能分支和修复分支都应通过 PR 合并，禁止直接推送到 `main`。
 
@@ -143,8 +146,8 @@ VERSION 文件
 
 推荐方式：
 ```bash
-git worktree add ../health-platform-ui feature/health-ui-refresh
-git worktree add ../health-platform-features feature/new-health-import
+git worktree add ../health-platform-ui feature/123-health-ui-refresh
+git worktree add ../health-platform-import feature/124-health-import
 ```
 
 约定：

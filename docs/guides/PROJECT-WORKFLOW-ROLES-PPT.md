@@ -189,7 +189,8 @@
 - 简单需求和复杂需求都必须通过 Development_Readiness_Reviewer
 - 复杂需求必须先批准并合入 requirement/design/plan
 - Issue 达到 `stage:ready-for-development` 后，再进入实现
-- 统一从最新 `main` 创建 `feature/<scope>-<desc>` 或 `fix/<scope>-<desc>`
+- 统一从最新 `main` 创建 `feature/<issue>-<slug>` 或 `fix/<issue>-<slug>`
+- 无 Issue 的小型修复允许使用 `fix/<slug>`；新功能必须包含 Issue 编号
 - 这样 feature 分支天然包含已批准文档
 
 **建议图示：**
@@ -243,7 +244,8 @@ flowchart LR
 | PR 类型 | 推荐关联方式 | 是否关闭 Issue |
 |---|---|---|
 | docs PR | `Refs #123` | 否 |
-| feature/fix PR | `Closes #123` / `Fixes #123` 或 `Refs #123` | 视情况 |
+| feature PR | `Closes #123` 或 `Refs #123` | 视情况 |
+| fix PR | `Fixes #123` / `Refs #123`；无 Issue 时不使用关联关键字 | 视情况 |
 | release PR | `Refs #123` | 否 |
 | follow-up PR | `Refs #123` | 否 |
 
@@ -305,8 +307,9 @@ flowchart LR
 |---|---|
 | `main` | 稳定主干 |
 | `docs/<issue>-<slug>` | 需求/设计/计划协作 |
-| `feature/<scope>-<desc>` | 新功能开发 |
-| `fix/<scope>-<desc>` | 缺陷修复 |
+| `feature/<issue>-<slug>` | 关联 Issue 的新功能开发 |
+| `fix/<issue>-<slug>` | 关联 Issue 的缺陷修复 |
+| `fix/<slug>` | 无 Issue 的小型缺陷修复例外 |
 | `release/<version>` | 发版准备 |
 | `hotfix/<version>` | 紧急修复 |
 

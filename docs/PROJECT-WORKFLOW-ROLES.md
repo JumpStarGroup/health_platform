@@ -219,7 +219,7 @@ flowchart TD
 | 阶段 | 目标 | 推荐分支 | 是否进入编码 |
 |---|---|---|---|
 | 需求/设计/计划阶段 | 澄清 What、Why、How、任务拆分 | `docs/<issue>-<slug>` | 否 |
-| 开发实现阶段 | 按已批准文档实现代码和测试 | `feature/<scope>-<desc>` 或 `fix/<scope>-<desc>` | 是 |
+| 开发实现阶段 | 按已批准文档实现代码和测试 | `feature/<issue>-<slug>` 或 `fix/<issue>-<slug>` | 是 |
 
 ### 6.5.1 需求评审与开发前就绪审核
 
@@ -281,21 +281,22 @@ gitGraph
     commit id: "docs: add plan"
     checkout main
     merge docs/123-health-import id: "docs PR merge"
-    branch feature/health-import
-    checkout feature/health-import
+    branch feature/123-health-import
+    checkout feature/123-health-import
     commit id: "feat: backend import"
     commit id: "feat: frontend import"
     commit id: "test: import coverage"
     checkout main
-    merge feature/health-import id: "feature PR merge"
+    merge feature/123-health-import id: "feature PR merge"
 ```
 
 | 分支类型 | 创建时机 | 创建角色 | 合入目标 | 内容 |
 |---|---|---|---|---|
 | `docs/<issue>-<slug>` | PM 开始形成可落库需求文档时 | Product_Manager | `main` | requirements/design/plan 文档 |
 | `docs/<issue>-<slug>` | 需求还不稳定但需要多人协作时 | Product_Manager 或需求审批负责人 | `main` | 草案、评审记录、方案候选 |
-| `feature/<scope>-<desc>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 代码、测试、必要文档更新 |
-| `fix/<scope>-<desc>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 修复代码、回归测试、必要文档更新 |
+| `feature/<issue>-<slug>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 代码、测试、必要文档更新 |
+| `fix/<issue>-<slug>` | Issue 已达到 `stage:ready-for-development` | Developer | `main` | 修复代码、回归测试、必要文档更新 |
+| `fix/<slug>` | 无关联 Issue 的小型缺陷修复 | Developer | `main` | 修复代码、回归测试、必要文档更新 |
 
 
 Issue 在问题达到“值得持续跟踪”的最小信息量后创建；docs 分支在需要形成正式、可评审的需求文档时创建。Issue 先于 docs 分支，早期探索内容保存在 Issue 描述和评论中，正式文档保存在 docs/<issue-id>-<slug> 分支并通过 PR 合入 main。
@@ -338,7 +339,7 @@ Issue 在问题达到“值得持续跟踪”的最小信息量后创建；docs 
 ```cmd
 git checkout main
 git pull origin main
-git checkout -b feature/<scope>-<desc>
+git checkout -b feature/<issue>-<slug>
 ```
 
 因为 docs-only PR 已经合入 `main`，Developer 从最新 `main` 创建 feature 分支时，会自然带上最新的 `docs/requirements`、`docs/Design` 和 `docs/plan` 内容。
@@ -371,7 +372,8 @@ Product_Manager、System_Architect、Tech_Lead_Planner 会通过 GitHub MCP 创�
 | PR 类型 | 是否关联 Issue | 推荐关键字 | 是否关闭 Issue | 说明 |
 |---|---|---|---|---|
 | docs PR | 是 | `Refs #123` | 否 | 只沉淀需求、设计、计划，不代表功能已交付 |
-| feature/fix PR | 是 | `Closes #123` / `Fixes #123` 或 `Refs #123` | 视情况 | 当该 PR 完整满足验收标准时使用 `Closes/Fixes`；如果只是部分实现，使用 `Refs` |
+| feature PR | 是 | `Closes #123` 或 `Refs #123` | 视情况 | 当该 PR 完整满足验收标准时使用 `Closes`；如果只是部分实现，使用 `Refs` |
+| fix PR | 推荐；无 Issue 的小型修复可例外 | `Fixes #123` / `Refs #123`；无 Issue 时不使用关联关键字 | 视情况 | 有 Issue 时遵循关闭或引用语义；无 Issue 时使用 `fix/<slug>` 并在 PR 中说明问题与验证证据 |
 | release/hotfix PR | 是 | `Refs #123`，必要时列出多个 Issue | 否 | 发布 PR 是版本包装和发布记录，通常不关闭需求 Issue |
 | follow-up PR | 是 | `Refs #123` | 否 | 用于补充测试、文档、体验微调或后续修正 |
 
@@ -380,7 +382,7 @@ Product_Manager、System_Architect、Tech_Lead_Planner 会通过 GitHub MCP 创�
 ```mermaid
 flowchart TD
     A[GitHub Issue #123<br/>需求主线] --> B[docs/123-slug PR<br/>Refs #123]
-    A --> C[feature/slug PR<br/>Closes #123 或 Refs #123]
+    A --> C[feature/123-slug PR<br/>Closes #123 或 Refs #123]
     A --> D[release/1.2.0 PR<br/>Refs #123]
     B --> E[requirements/design/plan 合入 main]
     E --> C
@@ -392,8 +394,9 @@ flowchart TD
 **默认策略：**
 
 - docs-only PR 永远使用 `Refs #<issue>`，避免需求在文档合并时被提前关闭；
-- feature/fix PR 如果完整交付该 Issue 的验收标准，使用 `Closes #<issue>` 或 `Fixes #<issue>`；
+- feature/fix PR 如果完整交付关联 Issue 的验收标准，使用 `Closes #<issue>` 或 `Fixes #<issue>`；
 - 如果一个 Issue 被拆成多个 feature PR，每个 PR 使用 `Refs #<issue>`，最后一个完成全部 AC 的 PR 再使用 `Closes #<issue>`；
+- 无 Issue 的小型修复使用 `fix/<slug>`，并在 PR 描述中记录问题、修复范围和验证证据；
 - release PR 使用 `Refs #<issue>` 列出本次发布包含的 Issue，并在 release notes 中保留追踪；
 - 如果一个 release 包含多个 Issue，PR 描述中使用清单列出 `Refs #123`, `Refs #124`, `Refs #125`。
 
@@ -436,18 +439,21 @@ flowchart TD
 :: 在 Terminal 3（操作终端）执行
 git checkout main
 git pull origin main
-git checkout -b feature/<short-feature-name>
-git push -u origin feature/<short-feature-name>
+git checkout -b feature/<issue>-<slug>
+git push -u origin feature/<issue>-<slug>
 ```
 
 **分支命名规范：**
 
 | 分支前缀 | 用途 | 示例 |
 |---|---|---|
-| `feature/<scope>-<desc>` | 新功能 | `feature/health-trend-dashboard` |
-| `fix/<scope>-<desc>` | Bug 修复 | `fix/bp-validation-limits` |
+| `feature/<issue>-<slug>` | 新功能 | `feature/123-health-trend-dashboard` |
+| `fix/<issue>-<slug>` | 有 Issue 的 Bug 修复 | `fix/456-bp-validation-limits` |
+| `fix/<slug>` | 无 Issue 的小型 Bug 修复 | `fix/login-copy-typo` |
 | `release/<version>` | 版本发布 | `release/1.2.0` |
 | `hotfix/<version>` | 紧急修复 | `hotfix/1.1.2` |
+
+`<issue>` 是不带 `#` 的 GitHub Issue 编号，`<slug>` 使用简短的英文小写 kebab-case。新功能必须关联 Issue；Bug 修复优先关联 Issue，仅无 Issue 的小型修复允许使用 `fix/<slug>`。
 
 ### 7.3 本地验证
 
@@ -508,7 +514,7 @@ git commit -m "feat(health): add trend dashboard for blood pressure"
 **2) 推送并创建 PR：**
 
 ```cmd
-git push origin feature/<short-feature-name>
+git push origin feature/<issue>-<slug>
 ```
 
 然后在 GitHub 创建 PR，PR 描述需包含：
@@ -525,8 +531,8 @@ git push origin feature/<short-feature-name>
 ```cmd
 git checkout main
 git pull origin main
-git branch -d feature/<short-feature-name>
-git push origin --delete feature/<short-feature-name>
+git branch -d feature/<issue>-<slug>
+git push origin --delete feature/<issue>-<slug>
 ```
 
 ---
@@ -746,12 +752,12 @@ gitGraph
     commit id: "docs: design and plan"
     checkout main
     merge docs/123-health-trend id: "docs PR merge"
-    branch feature/health-trend
-    checkout feature/health-trend
+    branch feature/123-health-trend
+    checkout feature/123-health-trend
     commit id: "feat: implement"
     commit id: "test: add cases"
     checkout main
-    merge feature/health-trend id: "PR merge"
+    merge feature/123-health-trend id: "PR merge"
     commit id: "staging auto-deploy"
     branch release/1.2.0
     checkout release/1.2.0
@@ -768,8 +774,9 @@ gitGraph
 | `main` | 始终保持可部署 |
 | `docs/<issue>-<slug>` | 已进入正式文档沉淀的需求/设计/计划协作 |
 | `docs/<issue>-<slug>` | 更早期、不稳定需求的跨角色草案协作 |
-| `feature/<scope>-<desc>` | 新功能开发 |
-| `fix/<scope>-<desc>` | Bug 修复 |
+| `feature/<issue>-<slug>` | 关联 Issue 的新功能开发 |
+| `fix/<issue>-<slug>` | 关联 Issue 的 Bug 修复 |
+| `fix/<slug>` | 无 Issue 的小型 Bug 修复例外 |
 | `release/<version>` | 发布准备 |
 | `hotfix/<version>` | 生产紧急修复 |
 

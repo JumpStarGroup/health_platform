@@ -30,10 +30,10 @@ tools: ['edit', 'execute/runNotebookCell', 'read/getNotebookSummary', 'read/read
       ```bash
       git checkout main
       git pull origin main
-      git checkout -b feature/<scope>-<desc>
+      git checkout -b feature/<issue>-<slug>
       ```
 
-      Use `fix/<scope>-<desc>` for bug fixes.
+      Use `fix/<issue>-<slug>` for bug fixes linked to an Issue. An untracked small fix may use `fix/<slug>`. Feature branches must always include the Issue number.
 2.  **Read Plan**:
     - Read the specific `/docs/plan/plan-*.md` for complex work.
     - For simple requirements, read the Issue and acceptance criteria directly; no plan doc is required unless the work is already large enough to warrant one.
