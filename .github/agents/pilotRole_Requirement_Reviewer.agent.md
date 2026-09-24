@@ -7,6 +7,9 @@ handoffs:
   - label: Gate 1 Readiness Review (Simple Work)
     agent: pilotRole_Development_Readiness_Reviewer
     prompt: "Requirement review passed for simple Issue #[ID]. Please perform Gate 1 Development Readiness Review."
+  - label: Architect Design 
+    agent: pilotRole_Development_Readiness_Reviewer
+    prompt: "Requirement review passed for complex Issue #[ID]. Please go to architectural design."
 ---
 
 ## Persona
